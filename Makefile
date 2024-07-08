@@ -1,7 +1,8 @@
 RISCVGUN ?= riscv64-unknown-elf
 
-CFLAGS = -Iinclude -Wall -g
-QEMUFLAGS = -M virt -bios none -serial stdio -display none
+CFLAGS = -I include -Wall -mcmodel=medany -g
+QEMUFLAGS = -M virt -bios none -display none -serial stdio \
+			-kernel kernel.img
 
 SRC_FILES = $(shell find src -name "*.S") \
 			$(shell find src -name "*.c")
@@ -23,4 +24,7 @@ kernel.img: build
 	$(RISCVGUN)-objcopy -O binary build/kernel.elf kernel.img
 
 qemu: all
-	qemu-system-riscv64 $(QEMUFLAGS) -kernel kernel.img
+	clear & qemu-system-riscv64 $(QEMUFLAGS)
+
+debug: all
+	qemu-system-riscv64 $(QEMUFLAGS) -S -s

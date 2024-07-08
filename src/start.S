@@ -4,7 +4,7 @@
 _start:
     csrr t0, mhartid
     bnez t0, halt
-    la sp, _start
+    la sp, __stack_top
     la t0, __bss_start
     la t1, __bss_end
 

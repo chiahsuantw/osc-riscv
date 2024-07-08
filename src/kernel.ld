@@ -9,5 +9,8 @@ SECTIONS
 		*(.bss)
 		__bss_end = .;
 	}
+	. = ALIGN(16);
+	. = . + 0x2000;
+	__stack_top = .;
     _end = .;
 }

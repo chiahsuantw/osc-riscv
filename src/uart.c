@@ -1,11 +1,20 @@
 #include "uart.h"
 
+char uart_getc()
+{
+    while ((*UART_LSR & 0x01) == 0)
+        ;
+    char c = (char)*UART_RBR;
+    return c == '\r' ? '\n' : c;
+}
+
 void uart_putc(char c)
 {
-    // while ((*UART_LSR & 0x40) == 0)
-    //     ;
-    // while (((*UART_LSR >> 5) & 1) != 1)
-    //     ;
+    if (c == '\n')
+        uart_putc('\r');
+
+    while ((*UART_LSR & 0x20) == 0)
+        ;
     *UART_THR = c;
 }
 

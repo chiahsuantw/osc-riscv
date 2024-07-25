@@ -1,8 +1,14 @@
 #include "sbi.h"
 
-#define SBI_EXT_PUTCHAR 0x1
-#define SBI_EXT_GETCHAR 0x2
-#define SBI_EXT_SRST    0x53525354
+#define SBI_EXT_PUTCHAR    0x1
+#define SBI_EXT_GETCHAR    0x2
+#define SBI_EXT_BASE       0x10
+#define SBI_EXT_BASE_PROBE 3
+#define SBI_EXT_SRST       0x53525354
+#define SBI_EXT_SRST_RST   0
+#define SBI_EXT_DBCN       0x4442434E
+#define SBI_EXT_DBCN_WRITE 0
+#define SBI_EXT_DBCN_READ  1
 
 struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
                         unsigned long arg1, unsigned long arg2,
@@ -41,7 +47,35 @@ int sbi_console_getchar()
     return ret.error;
 }
 
+int sbi_probe_extension(int extid)
+{
+    struct sbiret ret;
+
+    ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE, extid, 0, 0, 0, 0, 0);
+    if (!ret.error)
+        if (ret.value)
+            return ret.value;
+
+    return 0;
+}
+
 struct sbiret sbi_system_reset(unsigned int type, unsigned int reason)
 {
-    return sbi_ecall(SBI_EXT_SRST, 0, type, reason, 0, 0, 0, 0);
+    return sbi_ecall(SBI_EXT_SRST, SBI_EXT_SRST_RST, type, reason, 0, 0, 0, 0);
+}
+
+int sbi_debug_console_write(const char *bytes, unsigned int size)
+{
+    struct sbiret ret;
+    ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_WRITE, size,
+                    (unsigned long)bytes, 0, 0, 0, 0);
+    return ret.error ? ret.error : ret.value;
+}
+
+int sbi_debug_console_read(char *bytes, unsigned int size)
+{
+    struct sbiret ret;
+    ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_READ, size, (unsigned long)bytes,
+                    0, 0, 0, 0);
+    return ret.error ? ret.error : ret.value;
 }

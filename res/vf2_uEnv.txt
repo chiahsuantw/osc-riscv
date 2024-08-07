@@ -1,0 +1,1 @@
+boot2=fatload mmc 1:3 ${loadaddr} kernel.fit; bootm ${loadaddr};

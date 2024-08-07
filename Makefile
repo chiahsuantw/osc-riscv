@@ -2,7 +2,8 @@ RISCVGUN ?= riscv64-unknown-elf
 
 CFLAGS = -I include -Wall -mcmodel=medany -g
 QEMUFLAGS = -M virt -display none -serial stdio \
-			-kernel build/kernel.elf
+			-kernel build/kernel.img \
+			# -dtb res/jh7110-starfive-visionfive-2-v1.3b.dtb
 
 SRC_FILES = $(shell find src -name "*.S") \
 			$(shell find src -name "*.c")
@@ -12,7 +13,7 @@ OBJ_FILES = $(addprefix build/, $(addsuffix .o, \
 all: clean kernel.img
 
 clean:
-	@rm -rf build *.img
+	rm -rf build *.fit
 
 build:
 	$(RISCVGUN)-gcc $(CFLAGS) -c $(SRC_FILES)
@@ -21,8 +22,8 @@ build:
 
 kernel.img: build
 	$(RISCVGUN)-ld -T src/kernel.ld -o build/kernel.elf $(OBJ_FILES)
-	$(RISCVGUN)-objcopy -O binary build/kernel.elf build/kernel.bin
-	mkimage -A riscv -O linux -T kernel -C none -a 0x40200000 -e 0x40200000 -d build/kernel.bin kernel.img
+	$(RISCVGUN)-objcopy -O binary build/kernel.elf build/kernel.img
+	mkimage -f src/kernel.its kernel.fit > /dev/null
 
 qemu: all
 	clear & qemu-system-riscv64 $(QEMUFLAGS)

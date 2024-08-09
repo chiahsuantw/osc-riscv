@@ -2,17 +2,15 @@
 
 .global _start
 _start:
-    # csrr t0, mhartid
-    # bnez t0, halt
     la sp, __stack_top
     la t0, __bss_start
     la t1, __bss_end
 
-bss_reset:
+clear_bss:
     bge t0, t1, run_kernel
     sd zero, 0(t0)
     addi t0, t0, 8
-    j bss_reset
+    j clear_bss
 
 run_kernel:
     call start_kernel

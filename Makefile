@@ -3,6 +3,7 @@ RISCVGUN ?= riscv64-unknown-elf
 CFLAGS = -I include -Wall -mcmodel=medany -g
 QEMUFLAGS = -M virt -display none -serial stdio \
 			-kernel build/kernel.img \
+			# -initrd res/initramfs.cpio \
 			# -dtb res/jh7110-starfive-visionfive-2-v1.3b.dtb
 
 SRC_FILES = $(shell find src -name "*.S") \

@@ -1,49 +1,49 @@
 /dts-v1/;
 
 / {
-        description = "U-boot FIT Image for VisionFive 2";
-        #address-cells = <2>;
+	description = "U-boot FIT Image for VisionFive 2";
+	#address-cells = <2>;
 
-        images {
-                kernel {
-                        description = "Kernel Image";
-                        data = /incbin/("../build/kernel.img");
-                        type = "kernel";
-                        arch = "riscv";
-                        os = "linux";
-                        load = <0x0 0x40200000>;
-                        entry = <0x0 0x40200000>;
-                        compression = "none";
-                };
+	images {
+		kernel {
+			description = "Kernel Image";
+			data = /incbin/("../build/kernel.img");
+			type = "kernel";
+			arch = "riscv";
+			os = "linux";
+			load = <0x0 0x40200000>;
+			entry = <0x0 0x40200000>;
+			compression = "none";
+		};
 
-                fdt {
-                        description = "Flat Device Tree";
-                        data = /incbin/("../res/jh7110-starfive-visionfive-2-v1.3b.dtb");
-                        type = "flat_dt";
-                        arch = "riscv";
-                        load = <0x0 0x46000000>;
-                        compression = "none";
-                };
+		fdt {
+			description = "Flat Device Tree";
+			data = /incbin/("../res/jh7110-starfive-visionfive-2-v1.3b.dtb");
+			type = "flat_dt";
+			arch = "riscv";
+			load = <0x0 0x46000000>;
+			compression = "none";
+		};
 
-                ramdisk {
-                        description = "Initial Ramdisk";
-                        data = /incbin/("../res/initramfs.cpio");
-                        type = "ramdisk";
-                        arch = "riscv";
-                        os = "linux";
-                        load = <0x0 0x46100000>;
-                        compression = "none";
-                };
-        };
+		ramdisk {
+			description = "Initial Ramdisk";
+			data = /incbin/("../res/initramfs.cpio");
+			type = "ramdisk";
+			arch = "riscv";
+			os = "linux";
+			load = <0x0 0x46100000>;
+			compression = "none";
+		};
+	};
 
-        configurations {
-                default = "config-1";
+	configurations {
+		default = "config-1";
 
-                config-1 {
-                        description = "NYCU OSC RISC-V KERNEL";
+		config-1 {
+			description = "NYCU OSC RISC-V KERNEL";
 			kernel = "kernel";
-                        fdt = "fdt";
-                        loadables = "ramdisk";
-                };
-        };
+			fdt = "fdt";
+			loadables = "ramdisk";
+		};
+	};
 };

@@ -1,6 +1,6 @@
 #include "initrd.h"
+#include "printk.h"
 #include "string.h"
-#include "uart.h"
 #include "utils.h"
 
 void *INITRD_BASE = (void *)0x84200000;
@@ -20,8 +20,7 @@ void initrd_traverse(int (*callback)(const void *))
 
         char pathname[namesize];
         strncpy(pathname, ptr + sizeof(struct cpio_t), namesize);
-        uart_puts(pathname);
-        uart_puts("\n");
+        printk("%s\n", pathname);
 
         ptr += headsize + datasize;
     }

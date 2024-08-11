@@ -1,7 +1,7 @@
 #include "cmd.h"
+#include "printk.h"
 #include "sbi.h"
 #include "string.h"
-#include "uart.h"
 
 struct command commands[] = {
     { .name = "help", .help = "print the help menu", .func = help },
@@ -16,17 +16,14 @@ void help()
     while (1) {
         if (!strcmp(commands[i].name, "NULL"))
             break;
-        uart_puts(commands[i].name);
-        uart_puts("\t: ");
-        uart_puts(commands[i].help);
-        uart_putc('\n');
+        printk("%s\t: %s\n", commands[i].name, commands[i].help);
         i++;
     }
 }
 
 void hello()
 {
-    uart_puts("Hello, World!\n");
+    printk("Hello, World!\n");
 }
 
 void reboot()

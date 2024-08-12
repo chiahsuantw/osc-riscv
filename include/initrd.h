@@ -17,4 +17,6 @@ struct cpio_t {
     char check[8];
 };
 
-void initrd_traverse(int (*callback)(const void *));
+void *initrd_get_next_hdr(const void *ptr);
+void initrd_list();
+void initrd_cat(const char *target);

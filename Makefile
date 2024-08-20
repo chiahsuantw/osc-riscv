@@ -14,7 +14,7 @@ OBJ_FILES = $(addprefix build/, $(addsuffix .o, \
 all: clean kernel
 
 clean:
-	rm -rf build *.fit
+	rm -rf build *.fit *.o
 
 build:
 	$(RISCVGUN)-gcc $(CFLAGS) -c $(SRC_FILES)

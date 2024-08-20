@@ -33,3 +33,11 @@ void *memset(void *s, int c, int n)
         *p++ = (unsigned char)c;
     return s;
 }
+
+int strlen(const char *s)
+{
+    int len = 0;
+    while (*s++ != '\0')
+        len++;
+    return len;
+}

@@ -31,3 +31,19 @@ int align(int n, int byte)
 {
     return (n + byte - 1) & ~(byte - 1);
 }
+
+/**
+ * @brief Convert a 4-byte big-endian sequence to little-endian
+ * 
+ * @param input big-endian sequence
+ * @return little-endian sequence
+ */
+u32 be2le(u32 input)
+{
+    u32 result = 0;
+    result |= (input & 0xFF) << 24;
+    result |= (input & 0xFF00) << 8;
+    result |= (input & 0xFF0000) >> 8;
+    result |= (input & 0xFF000000) >> 24;
+    return result;
+}

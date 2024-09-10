@@ -4,6 +4,10 @@
 _start:
     la t0, DTB_BASE
     sd a1, 0(t0)
+
+    la t0, handle_exception
+    csrw stvec, t0
+
     la sp, __stack_top
     la t0, __bss_start
     la t1, __bss_end

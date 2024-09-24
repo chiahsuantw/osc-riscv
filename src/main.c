@@ -2,6 +2,7 @@
 #include "printk.h"
 #include "sbi.h"
 #include "shell.h"
+#include "uart.h"
 
 void switch_to_user_mode()
 {
@@ -33,12 +34,14 @@ int start_kernel()
 {
     printk("\nNYCU OSC RISC-V KERNEL\n");
 
-    enable_interrupt();
-    enable_timer_interrupt();
-    sbi_set_timer(10000000);
+    // enable_interrupt();
+    // enable_timer_interrupt();
+    // sbi_set_timer(10000000);
 
     // switch_to_user_mode();
     // asm("ecall");
+
+    uart_init();
 
     run_shell();
     return 0;

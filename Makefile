@@ -1,7 +1,7 @@
 RISCVGUN ?= riscv64-unknown-elf
 
 CFLAGS = -I include -ffreestanding -mcmodel=medany -Wall -g
-QEMUFLAGS = -M virt -display none -serial stdio \
+QEMUFLAGS = -M virt -smp 5 -m 4G -display none -serial stdio \
 			-kernel build/kernel.img \
 			-initrd res/initramfs.cpio
 LD_SCRIPT = src/kernel.ld

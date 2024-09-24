@@ -4,6 +4,8 @@
 #define SBI_EXT_GETCHAR    0x2
 #define SBI_EXT_BASE       0x10
 #define SBI_EXT_BASE_PROBE 3
+#define SBI_EXT_TIME       0x54494D45
+#define SBI_EXT_TIME_SET   0
 #define SBI_EXT_SRST       0x53525354
 #define SBI_EXT_SRST_RST   0
 #define SBI_EXT_DBCN       0x4442434E
@@ -57,6 +59,12 @@ int sbi_probe_extension(int extid)
             return ret.value;
 
     return 0;
+}
+
+struct sbiret sbi_set_timer(unsigned long stime_value)
+{
+    return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET, stime_value, 0, 0, 0, 0,
+                     0);
 }
 
 struct sbiret sbi_system_reset(unsigned int type, unsigned int reason)

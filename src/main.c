@@ -1,5 +1,6 @@
 #include "devtree.h"
 #include "printk.h"
+#include "sbi.h"
 #include "shell.h"
 
 void switch_to_user_mode()
@@ -15,11 +16,30 @@ void trap_handler()
         ;
 }
 
+void enable_interrupt()
+{
+    // Set sstatus.SIE to 1
+    asm("csrsi sstatus, (1 << 1)");
+}
+
+void enable_timer_interrupt()
+{
+    // Set sie.TSIE to 1
+    asm("li t0, (1 << 5);"
+        "csrs sie, t0;");
+}
+
 int start_kernel()
 {
     printk("\nNYCU OSC RISC-V KERNEL\n");
-    switch_to_user_mode();
-    asm("ecall");
+
+    enable_interrupt();
+    enable_timer_interrupt();
+    sbi_set_timer(10000000);
+
+    // switch_to_user_mode();
+    // asm("ecall");
+
     run_shell();
     return 0;
 }

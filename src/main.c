@@ -1,4 +1,5 @@
 #include "devtree.h"
+#include "list.h"
 #include "printk.h"
 #include "sbi.h"
 #include "shell.h"
@@ -34,14 +35,29 @@ int start_kernel()
 {
     printk("\nNYCU OSC RISC-V KERNEL\n");
 
-    // enable_interrupt();
-    // enable_timer_interrupt();
-    // sbi_set_timer(10000000);
+    struct my_struct {
+        int data;
+        struct list_head list;
+    };
 
-    // switch_to_user_mode();
-    // asm("ecall");
+    struct list_head my_list;
+    INIT_LIST_HEAD(&my_list);
 
-    uart_init();
+    struct my_struct item1, item2;
+    item1.data = 1;
+    item2.data = 2;
+    INIT_LIST_HEAD(&item1.list);
+    INIT_LIST_HEAD(&item2.list);
+    list_add(&item1.list, &my_list);
+    list_add(&item2.list, &my_list);
+
+    struct list_head *current;
+    list_for_each(current, &my_list) {
+        printk("List Item: ");
+        struct my_struct *s = list_entry(current, struct my_struct, list);
+        uart_hex(s->data);
+        printk("\n");
+    }
 
     run_shell();
     return 0;

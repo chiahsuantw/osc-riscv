@@ -55,7 +55,7 @@ static inline void __list_add(struct list_head *node, struct list_head *prev,
 
 /**
  * list_add - add a new entry
- * @new: new entry to be added.
+ * @node: new entry to be added.
  * @head: list head to add it after.
  *
  * Insert a new entry after the specified head.
@@ -68,7 +68,7 @@ static inline void list_add(struct list_head *node, struct list_head *head)
 
 /**
  * list_add_tail - add a new entry
- * @new: new entry to be added.
+ * @node: new entry to be added.
  * @head: list head to add it before.
  *
  * Insert a new entry before the specified head.
@@ -132,6 +132,17 @@ static inline int list_empty(const struct list_head *head)
  * @member: the name of the list_head within the struct.
  */
 #define list_entry(ptr, type, member) container_of(ptr, type, member)
+
+/**
+ * list_first_entry - get the first element from a list
+ * @ptr: the list head to take the element from.
+ * @type: the type of the struct this is embedded in.
+ * @member: the name of the list_head within the struct.
+ *
+ * Note, that list is expected to be not empty.
+ */
+#define list_first_entry(ptr, type, member) \
+    list_entry((ptr)->next, type, member)
 
 /**
  * list_count_nodes - count nodes in the list

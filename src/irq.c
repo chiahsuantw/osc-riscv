@@ -1,19 +1,5 @@
 
 #include "irq.h"
-#include "printk.h"
-
-void switch_to_user_mode()
-{
-    asm("csrw sepc, ra;");
-    asm("sret");
-}
-
-void trap_handler()
-{
-    printk("Kernel Trap!\n");
-    while (1)
-        ;
-}
 
 void enable_interrupt()
 {
@@ -21,9 +7,14 @@ void enable_interrupt()
     asm("csrsi sstatus, (1 << 1)");
 }
 
-void enable_timer_interrupt()
+void disable_interrupt()
 {
-    // Set sie.TSIE to 1
-    asm("li t0, (1 << 5);"
-        "csrs sie, t0;");
+    // Set sstatus.SIE to 0
+    asm("csrci sstatus, (1 << 1)");
+}
+
+void switch_to_user_mode()
+{
+    asm("csrw sepc, ra;");
+    asm("sret");
 }

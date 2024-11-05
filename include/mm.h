@@ -23,5 +23,5 @@ void *kmalloc(unsigned int size);
 void kfree(void *ptr);
 
 void mem_init();
-void reserve_memory(u64 start, u64 end);
+void reserve_memory(u64 addr, u64 size);
 void dump_buddy_info();

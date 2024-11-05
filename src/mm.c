@@ -4,22 +4,50 @@
 extern u8 _end;
 static u8 *heap_top = &_end;
 
-#define BUDDY_MAX_ORDER 10
-#define CACHE_MAX_ORDER 6
+#define NUM_PAGES 0x100000
 
-#define NUM_PAGES 0x40000
+// TODO: Calculate the max cache index based on the page size
+#define BUDDY_MAX_ORDER 10
+#define CACHE_MAX_INDEX 6
+#define CACHE_MIN_SIZE  32
+#define CACHE_UNALLOC   -1
 
 static struct page *mem_map;
 static struct list_head free_area[BUDDY_MAX_ORDER + 1];
-static struct list_head kmem_cache[CACHE_MAX_ORDER + 1];
+static struct list_head kmem_cache[CACHE_MAX_INDEX + 1];
 
-static void *alloc(unsigned long size)
+static void *alloc_bootmem(unsigned long size)
 {
     if (size < 0)
         return 0;
     void *p = heap_top;
     heap_top += size;
     return p;
+}
+
+void mem_init()
+{
+    // Set up the buddy system
+    for (int i = 0; i <= BUDDY_MAX_ORDER; i++)
+        INIT_LIST_HEAD(&free_area[i]);
+
+    for (int i = 0; i <= CACHE_MAX_INDEX; i++)
+        INIT_LIST_HEAD(&kmem_cache[i]);
+
+    mem_map = alloc_bootmem(sizeof(struct page) * NUM_PAGES);
+    for (int i = 0; i < NUM_PAGES; i++) {
+        mem_map[i].order = 0;
+        mem_map[i].used = 0;
+        mem_map[i].cacheidx = CACHE_UNALLOC;
+        INIT_LIST_HEAD(&mem_map[i].list);
+        if (i % (1 << BUDDY_MAX_ORDER) == 0) {
+            mem_map[i].order = BUDDY_MAX_ORDER;
+            list_add_tail(&mem_map[i].list, &free_area[BUDDY_MAX_ORDER]);
+        }
+    }
+
+    // Reserve the memory used by the kernel
+    reserve_memory(0, (u64)heap_top);
 }
 
 static struct page *get_buddy(struct page *page, unsigned int order)
@@ -35,7 +63,7 @@ struct page *alloc_pages(unsigned int order)
             continue;
 
         struct page *page = list_first_entry(&free_area[i], struct page, list);
-        list_del_entry(&page->list);
+        list_del_init(&page->list);
         page->order = order;
         page->used = 1;
 
@@ -59,12 +87,9 @@ void free_pages(struct page *page)
         struct page *buddy = get_buddy(current, order);
         if (buddy->used || buddy->order != order)
             break;
-        list_del_entry(&buddy->list);
-        if (current > buddy) {
-            struct page *tmp = current;
+        list_del_init(&buddy->list);
+        if (current > buddy)
             current = buddy;
-            buddy = tmp;
-        }
         order++;
     }
 
@@ -86,42 +111,86 @@ void dump_buddy_info()
 
 void *kmem_cache_alloc(unsigned int index)
 {
-    return 0;
+    if (list_empty(&kmem_cache[index])) {
+        struct page *page = alloc_pages(0);
+        page->cacheidx = index;
+        unsigned long page_addr = (page - mem_map) * PAGE_SIZE;
+        unsigned int cache_size = CACHE_MIN_SIZE << index;
+        for (int i = 0; i < PAGE_SIZE; i += cache_size) {
+            struct object *obj = (struct object *)(page_addr + i);
+            INIT_LIST_HEAD(&obj->list);
+            list_add_tail(&obj->list, &kmem_cache[index]);
+        }
+    }
+    struct object *obj =
+        list_first_entry(&kmem_cache[index], struct object, list);
+    list_del_init(&obj->list);
+    return obj;
 }
 
 void kmem_cache_free(void *ptr)
 {
+    struct page *page = &mem_map[(unsigned long)ptr / PAGE_SIZE];
+    struct object *obj = (struct object *)ptr;
+    list_add_tail(&obj->list, &kmem_cache[page->cacheidx]);
 }
 
 void *kmalloc(unsigned int size)
 {
-    return 0;
+    if (size <= 0)
+        return 0;
+    // TODO: Use (size > (PAGE_SIZE / 2)) instead
+    if (size > (CACHE_MIN_SIZE << CACHE_MAX_INDEX)) {
+        int order = 0;
+        while ((PAGE_SIZE << order) < size)
+            order++;
+        struct page *page = alloc_pages(order);
+        return (void *)((page - mem_map) * PAGE_SIZE);
+    } else {
+        int index = 0;
+        while ((CACHE_MIN_SIZE << index) < size)
+            index++;
+        return kmem_cache_alloc(index);
+    }
 }
 
 void kfree(void *ptr)
 {
+    struct page *page = &mem_map[(unsigned long)ptr / PAGE_SIZE];
+    if (page->cacheidx == CACHE_UNALLOC) {
+        if ((unsigned long)ptr % PAGE_SIZE != 0)
+            return;
+        free_pages(page);
+    } else {
+        kmem_cache_free(ptr);
+    }
 }
 
-void mem_init()
+void reserve_memory(u64 addr, u64 size)
 {
-    // Set up the buddy system
-    for (int i = 0; i <= BUDDY_MAX_ORDER; i++)
-        INIT_LIST_HEAD(&free_area[i]);
-
-    for (int i = 0; i <= CACHE_MAX_ORDER; i++)
-        INIT_LIST_HEAD(&kmem_cache[i]);
-
-    mem_map = alloc(sizeof(struct page) * NUM_PAGES);
-    for (int i = 0; i < NUM_PAGES; i++) {
-        mem_map[i].order = 0;
-        mem_map[i].used = 0;
-        mem_map[i].cacheidx = -1;
-        INIT_LIST_HEAD(&mem_map[i].list);
-        if (i % (1 << BUDDY_MAX_ORDER) == 0) {
-            mem_map[i].order = BUDDY_MAX_ORDER;
-            list_add_tail(&mem_map[i].list, &free_area[BUDDY_MAX_ORDER]);
+    unsigned long start, end;
+    start = addr & ~(PAGE_SIZE - 1);
+    end = (addr + size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    for (int order = BUDDY_MAX_ORDER; order >= 0; order--) {
+        struct list_head *pos, *tmp;
+        list_for_each_safe(pos, tmp, &free_area[order]) {
+            struct page *curr = list_entry(pos, struct page, list);
+            unsigned long page_start = (curr - mem_map) * PAGE_SIZE;
+            unsigned long page_end = page_start + (PAGE_SIZE << order);
+            if (page_start >= end || page_end <= start)
+                continue;
+            if (page_start >= start && page_end <= end) {
+                list_del_init(&curr->list);
+                curr->order = order;
+                curr->used = 1;
+            } else {
+                struct page *half = get_buddy(curr, order - 1);
+                list_del_init(&curr->list);
+                curr->order = order - 1;
+                half->order = order - 1;
+                list_add(&curr->list, &free_area[order - 1]);
+                list_add(&half->list, &free_area[order - 1]);
+            }
         }
     }
-
-    // TODO: Reserve the memory used by the kernel
 }

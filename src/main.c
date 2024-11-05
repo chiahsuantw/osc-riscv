@@ -8,6 +8,7 @@ int start_kernel()
 {
     mem_init();
     timer_init();
+    irq_init();
     enable_interrupt();
     set_timeout("World!", 20);
     set_timeout("Hello", 10);

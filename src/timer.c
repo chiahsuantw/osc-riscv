@@ -48,6 +48,8 @@ void timer_irq_handler()
         list_del_init(&timer->list);
         kfree(timer);
     }
+
+    enable_timer_interrupt();
 }
 
 long get_uptime()

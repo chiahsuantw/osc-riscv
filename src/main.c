@@ -1,3 +1,4 @@
+#include "cmd.h"
 #include "irq.h"
 #include "mm.h"
 #include "printk.h"
@@ -10,9 +11,7 @@ int start_kernel()
     timer_init();
     irq_init();
     enable_interrupt();
-    set_timeout("World!", 20);
-    set_timeout("Hello", 10);
-    set_timeout(" ", 15);
+    cmd_init();
     printk("\nNYCU OSC RISC-V KERNEL\n");
     run_shell();
     return 0;

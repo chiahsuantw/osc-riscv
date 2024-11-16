@@ -41,3 +41,42 @@ int strlen(const char *s)
         len++;
     return len;
 }
+
+char *strchr(const char *s, int c)
+{
+    char ch = (char)c;
+    while (*s) {
+        if (*s == ch)
+            return (char *)s;
+        s++;
+    }
+    if (ch == '\0')
+        return (char *)s;
+    return 0;
+}
+
+char *strtok(char *s, const char *delim)
+{
+    static char *next = 0;
+    if (s)
+        next = s;
+    if (!next)
+        return 0;
+    char *start = next;
+    while (*start && strchr(delim, *start))
+        start++;
+    if (*start == '\0') {
+        next = 0;
+        return 0;
+    }
+    char *end = start;
+    while (*end && !strchr(delim, *end))
+        end++;
+    if (*end) {
+        *end = '\0';
+        next = end + 1;
+    } else {
+        next = 0;
+    }
+    return start;
+}

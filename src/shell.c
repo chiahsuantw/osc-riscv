@@ -39,19 +39,3 @@ void read_user_input(char *buf)
         }
     }
 }
-
-int exec_command(const char *command)
-{
-    int i = 0;
-    while (1) {
-        if (!strcmp(commands[i].name, "NULL")) {
-            uart_puts("Command not found\n");
-            return -1;
-        } else if (!strcmp(commands[i].name, command)) {
-            commands[i].func();
-            return 0;
-        }
-        i++;
-    }
-    return 0;
-}

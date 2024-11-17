@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "initrd.h"
 #include "mm.h"
 #include "printk.h"
 #include "sbi.h"
@@ -9,10 +10,13 @@ static struct list_head commands;
 void cmd_init()
 {
     INIT_LIST_HEAD(&commands);
-    register_command("help", "Show all commands", help);
-    register_command("hello", "Show hello message", hello);
-    register_command("reboot", "Reboot the device", reboot);
-    register_command("clear", "Clear the screen", clear);
+    register_command("help", "Show all commands", cmd_help);
+    register_command("hello", "Show hello message", cmd_hello);
+    register_command("reboot", "Reboot the device", cmd_reboot);
+    register_command("clear", "Clear the screen", cmd_clear);
+    register_command("ls", "List files", cmd_ls);
+    register_command("cat", "Show file content", cmd_cat);
+    register_command("exec", "Execute a program", cmd_exec);
 }
 
 void register_command(const char *name, const char *help, void (*func)(char *))
@@ -57,7 +61,7 @@ int exec_command(char *input)
     return -1;
 }
 
-void help()
+void cmd_help()
 {
     struct list_head *pos;
     list_for_each(pos, &commands) {
@@ -66,17 +70,31 @@ void help()
     }
 }
 
-void hello()
+void cmd_hello()
 {
     printk("Hello, World!\n");
 }
 
-void reboot()
+void cmd_reboot()
 {
     sbi_system_reset(SBI_SRST_TYPE_WARM_REBOOT, SBI_SRST_REASON_NONE);
 }
 
-void clear()
+void cmd_clear()
 {
     printk("\033[H\033[J");
+}
+
+void cmd_ls()
+{
+    initrd_list();
+}
+
+void cmd_cat(char *args)
+{
+    initrd_cat(args);
+}
+
+void cmd_exec(char *args)
+{
 }

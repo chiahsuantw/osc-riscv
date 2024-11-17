@@ -13,7 +13,10 @@ void cmd_init();
 void register_command(const char *name, const char *help, void (*func)(char *));
 int exec_command(char *input);
 
-void help();
-void hello();
-void reboot();
-void clear();
+void cmd_help();
+void cmd_hello();
+void cmd_reboot();
+void cmd_clear();
+void cmd_ls();
+void cmd_cat(char *args);
+void cmd_exec(char *args);

@@ -3,7 +3,7 @@
 #include "string.h"
 #include "utils.h"
 
-void *INITRD_BASE = (void *)0x84200000;
+void *INITRD_BASE = (void *)0xA0200000;
 
 void *initrd_get_next_hdr(const void *ptr)
 {
@@ -32,6 +32,8 @@ void initrd_list()
 
 void initrd_cat(const char *target)
 {
+    if (target == 0)
+        return;
     const char *ptr = INITRD_BASE;
     while (initrd_get_next_hdr(ptr)) {
         struct cpio_t *hdr = (struct cpio_t *)ptr;

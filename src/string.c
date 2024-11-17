@@ -80,3 +80,12 @@ char *strtok(char *s, const char *delim)
     }
     return start;
 }
+
+void *memcpy(void *dst, const void *src, int n)
+{
+    char *d = dst;
+    const char *s = src;
+    while (n--)
+        *d++ = *s++;
+    return dst;
+}

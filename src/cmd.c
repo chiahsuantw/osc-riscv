@@ -97,4 +97,5 @@ void cmd_cat(char *args)
 
 void cmd_exec(char *args)
 {
+    initrd_exec(args);
 }

@@ -20,3 +20,4 @@ struct cpio_t {
 void *initrd_get_next_hdr(const void *ptr);
 void initrd_list();
 void initrd_cat(const char *target);
+void initrd_exec(const char *target);

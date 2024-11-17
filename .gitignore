@@ -1,2 +1,5 @@
 build
+*.o
+*.elf
+*.img
 *.fit

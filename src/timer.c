@@ -35,7 +35,7 @@ void timer_irq_handler()
     // Set up the next timer interrupt
     unsigned long ticks;
     asm("rdtime %0" : "=r"(ticks));
-    ticks += 10000000;
+    ticks += 10000000; // 1 second
     sbi_set_timer(ticks);
 
     // Check the timer queue
@@ -55,7 +55,7 @@ void timer_irq_handler()
 long get_uptime()
 {
     // TODO: Get the timer frequency
-    unsigned long ticks, freq = 3686400;
+    unsigned long ticks, freq = 10000000;
     asm("rdtime %0" : "=r"(ticks));
     return ticks / freq;
 }

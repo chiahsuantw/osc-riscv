@@ -47,7 +47,7 @@ static void irq_add_task(void (*callback)(), int priority)
     list_add_tail(&task->list, &irq_tasks);
 }
 
-void irq_entry()
+void do_irq(struct pt_regs *regs)
 {
     disable_interrupt();
     if (0) {        // UART interrupt

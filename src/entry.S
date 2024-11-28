@@ -39,19 +39,31 @@ handle_exception:
 
     // TODO: sp
     csrrc s1, sstatus, t0
-	csrr s2, sepc
-	csrr s3, stval
-	csrr s4, scause
-	csrr s5, sscratch
+    csrr s2, sepc
+    csrr s3, stval
+    csrr s4, scause
+    csrr s5, sscratch
     # sd s0, PT_SP(sp)
-	sd s1, PT_STATUS(sp)
-	sd s2, PT_EPC(sp)
-	sd s3, PT_BADADDR(sp)
-	sd s4, PT_CAUSE(sp)
-	sd s5, PT_TP(sp)
+    sd s1, PT_STATUS(sp)
+    sd s2, PT_EPC(sp)
+    sd s3, PT_BADADDR(sp)
+    sd s4, PT_CAUSE(sp)
+    sd s5, PT_TP(sp)
 
     move a0, sp /* pt_regs */
-    call trap_handler
+
+    /*
+     * MSB of scause differentiates between
+     * interrupts and exceptions
+     */
+    bge s4, zero, 1f
+
+    /* Handle interrupts */
+    call do_irq
+    j ret_from_exception
+1:
+    /* Handle exceptions */
+    call do_traps
     j ret_from_exception
 
 .global ret_from_exception
@@ -61,7 +73,6 @@ ret_from_exception:
     ld s1, PT_STATUS(sp)
     ld s2, PT_EPC(sp)
     csrw sstatus, s1
-    addi s2, s2, 4 // pc += 4
     csrw sepc, s2
 
     ld x1,  PT_RA(sp)

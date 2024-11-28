@@ -49,6 +49,7 @@ static void irq_add_task(void (*callback)(), int priority)
 
 void do_irq(struct pt_regs *regs)
 {
+    printk("do_irq\n");
     disable_interrupt();
     if (0) {        // UART interrupt
     } else if (1) { // Timer interrupt

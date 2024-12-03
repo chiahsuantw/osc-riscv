@@ -109,3 +109,8 @@ ret_from_exception:
     addi sp, sp, PT_SIZE_ON_STACK
 
     sret
+
+// TODO: Implement the switch_to function
+.global switch_to
+switch_to:
+    ret

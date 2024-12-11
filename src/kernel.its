@@ -11,9 +11,9 @@
 			type = "kernel";
 			arch = "riscv";
 			os = "linux";
+			compression = "none";
 			load = <0x0 0x40200000>;
 			entry = <0x0 0x40200000>;
-			compression = "none";
 		};
 
 		fdt {
@@ -21,8 +21,8 @@
 			data = /incbin/("../res/jh7110-starfive-visionfive-2-v1.3b.dtb");
 			type = "flat_dt";
 			arch = "riscv";
-			load = <0x0 0x46000000>;
 			compression = "none";
+			load = <0x0 0x46000000>;
 		};
 
 		ramdisk {
@@ -31,8 +31,8 @@
 			type = "ramdisk";
 			arch = "riscv";
 			os = "linux";
-			load = <0x0 0x46100000>;
 			compression = "none";
+			load = <0x0 0x46100000>;
 		};
 	};
 
@@ -43,7 +43,7 @@
 			description = "NYCU OSC RISC-V KERNEL";
 			kernel = "kernel";
 			fdt = "fdt";
-			loadables = "ramdisk";
+			ramdisk = "ramdisk";
 		};
 	};
 };

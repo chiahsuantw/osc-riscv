@@ -1,6 +1,7 @@
 #include "initrd.h"
 #include "mm.h"
 #include "printk.h"
+#include "sched.h"
 #include "string.h"
 #include "utils.h"
 
@@ -66,6 +67,9 @@ void initrd_exec(const char *target)
         if (!memcmp(ptr + sizeof(struct cpio_t), target, namesize)) {
             void *program = kmalloc(filesize);
             memcpy(program, ptr + headsize, filesize);
+            struct task_struct *task = kthread_create(program);
+            asm("csrw sscratch, %0" ::"r"(task));
+            asm("mv sp, %0" ::"r"(task->user_sp));
             asm("csrw sepc, %0" ::"r"(program));
             asm("li t0, (1 << 8);"
                 "csrc sstatus, t0;");

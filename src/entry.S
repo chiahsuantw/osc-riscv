@@ -3,13 +3,22 @@
 .global handle_exception
 .align 4
 handle_exception:
-    // TODO: Swich user sp to kernel sp
-    // Save context
+    csrrw tp, sscratch, tp
+    bnez tp, save_context
+
+    /* Restore kernel tp and sp */
+    csrr tp, sscratch
+    sd sp, TASK_KERNEL_SP(tp)
+
+save_context:
+    sd sp, TASK_USER_SP(tp)
+    ld sp, TASK_KERNEL_SP(tp)
+
+    /* Save context */
     addi sp, sp, -PT_SIZE_ON_STACK
     sd x1,  PT_RA(sp)
     sd x3,  PT_GP(sp)
     sd x5,  PT_T0(sp)
-
     sd x6,  PT_T1(sp)
     sd x7,  PT_T2(sp)
     sd x8,  PT_S0(sp)
@@ -37,18 +46,20 @@ handle_exception:
     sd x30, PT_T5(sp)
     sd x31, PT_T6(sp)
 
-    // TODO: sp
+    ld s0, TASK_USER_SP(tp)
     csrrc s1, sstatus, t0
     csrr s2, sepc
     csrr s3, stval
     csrr s4, scause
     csrr s5, sscratch
-    # sd s0, PT_SP(sp)
+    sd s0, PT_SP(sp)
     sd s1, PT_STATUS(sp)
     sd s2, PT_EPC(sp)
     sd s3, PT_BADADDR(sp)
     sd s4, PT_CAUSE(sp)
     sd s5, PT_TP(sp)
+
+    csrw sscratch, x0
 
     move a0, sp /* pt_regs */
 
@@ -68,18 +79,27 @@ handle_exception:
 
 .global ret_from_exception
 ret_from_exception:
-    // Restore context
+    ld s0, PT_STATUS(sp)
+    andi s0, s0, (1 << 8)
+    bnez s0, 1f
 
-    ld s1, PT_STATUS(sp)
-    ld s2, PT_EPC(sp)
-    csrw sstatus, s1
-    csrw sepc, s2
+    /* Save unwound kernel stack pointer in task_struct */
+    addi s0, sp, PT_SIZE_ON_STACK
+    sd s0, TASK_KERNEL_SP(tp)
+    csrw sscratch, tp
+1:
+    /* Restore context */
+    ld a0, PT_STATUS(sp)
+    ld a2, PT_EPC(sp)
+    sc.d x0, a2, PT_EPC(sp)
+
+    csrw sstatus, a0
+    csrw sepc, a2
 
     ld x1,  PT_RA(sp)
     ld x3,  PT_GP(sp)
-    # ld x4,  PT_TP(sp)
+    ld x4,  PT_TP(sp)
     ld x5,  PT_T0(sp)
-
     ld x6,  PT_T1(sp)
     ld x7,  PT_T2(sp)
     ld x8,  PT_S0(sp)
@@ -106,8 +126,7 @@ ret_from_exception:
     ld x29, PT_T4(sp)
     ld x30, PT_T5(sp)
     ld x31, PT_T6(sp)
-    addi sp, sp, PT_SIZE_ON_STACK
-
+    ld x2,  PT_SP(sp)
     sret
 
 .global switch_to

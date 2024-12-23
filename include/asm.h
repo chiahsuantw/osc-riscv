@@ -52,3 +52,6 @@
 #define CTX_S9  88
 #define CTX_S10 96
 #define CTX_S11 104
+
+#define TASK_KERNEL_SP 128
+#define TASK_USER_SP   136

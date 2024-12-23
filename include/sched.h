@@ -19,11 +19,6 @@ struct task_struct {
     struct thread_struct context;
     long pid;
     enum task_state state;
-    /*
-     * The kernel and user stack pointer can be removed since
-     * the bottom of the stack is the task_struct itself and 
-     * the user stack can be retrieved from the vmarea struct.
-     */
     long kernel_sp;
     long user_sp;
     struct list_head list;

@@ -103,6 +103,17 @@ static inline void list_del_init(struct list_head *entry)
 }
 
 /**
+ * list_is_last - tests whether @list is the last entry in list @head
+ * @list: the entry to test
+ * @head: the head of the list
+ */
+static inline int list_is_last(const struct list_head *list,
+                               const struct list_head *head)
+{
+    return list->next == head;
+}
+
+/**
  * list_is_head - tests whether @list is the list @head
  * @list: the entry to test.
  * @head: the head of the list.
@@ -140,6 +151,28 @@ static inline int list_empty(const struct list_head *head)
  */
 #define list_first_entry(ptr, type, member) \
     list_entry((ptr)->next, type, member)
+
+/**
+ * list_next_entry - get the next element in list
+ * @pos: the type * to cursor
+ * @member: the name of the list_head within the struct.
+ */
+#define list_next_entry(pos, member) \
+    list_entry((pos)->member.next, typeof(*(pos)), member)
+
+/**
+ * list_next_entry_circular - get the next element in list
+ * @pos: the type * to cursor.
+ * @head: the list head to take the element from.
+ * @member: the name of the list_head within the struct.
+ *
+ * Wraparound if pos is the last element (return the first element).
+ * Note, that list is expected to be not empty.
+ */
+#define list_next_entry_circular(pos, head, member)       \
+    (list_is_last(&(pos)->member, head) ?                 \
+         list_first_entry(head, typeof(*(pos)), member) : \
+         list_next_entry(pos, member))
 
 /**
  * list_for_each - iterate over a list

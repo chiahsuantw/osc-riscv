@@ -1,6 +1,7 @@
 
 #include "irq.h"
 #include "mm.h"
+#include "printk.h"
 #include "timer.h"
 
 static struct list_head irq_tasks;

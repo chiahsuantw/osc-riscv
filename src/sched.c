@@ -27,9 +27,8 @@ struct task_struct *find_task(int pid)
 void schedule()
 {
     // TODO: Disable interrupt?
-    // TODO: Implement list_next_entry_circular
-    struct task_struct *next = 0;
-    switch_to(get_current(), next);
+    struct task_struct *current = get_current();
+    switch_to(current, list_next_entry_circular(current, &runqueue, list));
 }
 
 void kill_zombies()
@@ -48,6 +47,7 @@ void kill_zombies()
 
 void idle()
 {
+    // TODO: Can we remove the loop?
     while (1) {
         kill_zombies();
         schedule();

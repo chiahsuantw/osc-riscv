@@ -37,3 +37,18 @@
 #define PT_BADADDR       264
 #define PT_CAUSE         272
 #define PT_ORIG_A0       280
+
+#define CTX_RA  0
+#define CTX_SP  8
+#define CTX_S0  16
+#define CTX_S1  24
+#define CTX_S2  32
+#define CTX_S3  40
+#define CTX_S4  48
+#define CTX_S5  56
+#define CTX_S6  64
+#define CTX_S7  72
+#define CTX_S8  80
+#define CTX_S9  88
+#define CTX_S10 96
+#define CTX_S11 104

@@ -1,6 +1,7 @@
 .section ".text"
 .global _start
 _start:
+    li a7, 0
     li t0, 0
     li t1, 5
 1:

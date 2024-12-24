@@ -1,6 +1,6 @@
 RISCVGUN ?= riscv64-unknown-elf
 
-CFLAGS = -I include -ffreestanding -mcmodel=medany -Wall -g
+CFLAGS = -I include -ffreestanding -mcmodel=medany -fomit-frame-pointer -Wall -g
 QEMUFLAGS = -M virt -smp 1 -m 4G -display none -serial stdio \
 			-kernel build/kernel.img \
 			-initrd res/initramfs.cpio

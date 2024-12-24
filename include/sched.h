@@ -16,11 +16,14 @@ enum task_state {
 };
 
 struct task_struct {
+    /* Do not change the first five fields */
     struct thread_struct context;
     long pid;
     enum task_state state;
     long kernel_sp;
     long user_sp;
+    unsigned long kernel_stack;
+    unsigned long user_stack;
     struct list_head list;
 };
 

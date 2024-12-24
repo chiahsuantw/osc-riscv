@@ -5,7 +5,6 @@
 
 void do_traps(struct pt_regs *regs)
 {
-    printk("do_traps\n");
     if (regs->cause != 8) {
         printk("[PANIC] Unknown exception\n");
         printk("sepc: %p\n", regs->epc);
@@ -16,7 +15,7 @@ void do_traps(struct pt_regs *regs)
     }
 
     // enable_interrupt();
-    printk("syscall(%d)\n", regs->a7);
+    regs->epc += 4;
     switch (regs->a7) {
     case 0:
         regs->a0 = sys_getpid();
@@ -31,7 +30,7 @@ void do_traps(struct pt_regs *regs)
         // TODO: sys_exec
         break;
     case 4:
-        regs->a0 = sys_fork();
+        regs->a0 = sys_fork(regs);
         break;
     case 5:
         sys_exit(0);
@@ -42,5 +41,4 @@ void do_traps(struct pt_regs *regs)
     default:
         printk("[PANIC] Unknown syscall(%d)\n", regs->a7);
     }
-    regs->epc += 4;
 }

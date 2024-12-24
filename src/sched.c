@@ -37,9 +37,8 @@ void kill_zombies()
         struct task_struct *task = list_entry(pos, struct task_struct, list);
         if (task->state == TASK_ZOMBIE) {
             list_del_init(&task->list);
-            // TODO: Free the kernel stack and user stack
-            // kfree((void *)task->kernel_sp);
-            // kfree((void *)task->user_sp);
+            kfree((void *)task->kernel_stack);
+            kfree((void *)task->user_stack);
             kfree(task);
         }
     }
@@ -66,8 +65,10 @@ struct task_struct *kthread_create(void (*threadfn)())
     struct task_struct *task = kmalloc(sizeof(struct task_struct));
     task->pid = nr_threads++;
     task->state = TASK_RUNNING;
-    task->kernel_sp = (long)kmalloc(STACK_SIZE) + STACK_SIZE;
-    task->user_sp = (long)kmalloc(STACK_SIZE) + STACK_SIZE;
+    task->kernel_stack = (unsigned long)kmalloc(STACK_SIZE);
+    task->user_stack = (unsigned long)kmalloc(STACK_SIZE);
+    task->kernel_sp = task->kernel_stack + STACK_SIZE;
+    task->user_sp = task->user_stack + STACK_SIZE;
     task->context.ra = (unsigned long)threadfn;
     task->context.sp = task->kernel_sp;
     list_add_tail(&task->list, &runqueue);

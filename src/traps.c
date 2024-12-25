@@ -14,7 +14,8 @@ void do_traps(struct pt_regs *regs)
             ;
     }
 
-    // enable_interrupt();
+    enable_interrupt();
+
     regs->epc += 4;
     switch (regs->a7) {
     case 0:

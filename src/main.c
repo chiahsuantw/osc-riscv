@@ -12,10 +12,10 @@ extern void fork_test();
 int start_kernel()
 {
     mem_init();
+    kthread_init();
     timer_init();
     irq_init();
     enable_interrupt();
-    kthread_init();
     cmd_init();
 
     kthread_create(fork_test);

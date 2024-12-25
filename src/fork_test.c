@@ -50,7 +50,7 @@ void do_fork_test()
                 asm("mv %0, sp" : "=r"(cur_sp));
                 printk("child2: pid = %d, cnt = %d, ptr = %p, sp = %p\n",
                        getpid(), cnt, &cnt, cur_sp);
-                for (int i = 0; i < 100000000; i++)
+                for (int i = 0; i < 1000000000; i++)
                     ;
                 cnt++;
             }

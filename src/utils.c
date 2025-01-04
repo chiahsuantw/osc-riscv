@@ -2,7 +2,7 @@
 
 /**
  * @brief Convert a hexadecimal string to integer
- * 
+ *
  * @param s hexadecimal string
  * @param n length of the string
  * @return integer value
@@ -22,7 +22,7 @@ int hextoi(const char *s, int n)
 
 /**
  * @brief Align a number to the nearest multiple of a given number
- * 
+ *
  * @param n number
  * @param byte alignment
  * @return aligned number
@@ -34,7 +34,7 @@ int align(int n, int byte)
 
 /**
  * @brief Convert a 4-byte big-endian sequence to little-endian
- * 
+ *
  * @param input big-endian sequence
  * @return little-endian sequence
  */

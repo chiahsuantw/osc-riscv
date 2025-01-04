@@ -2,6 +2,22 @@
 
 .global _start
 _start:
+    /* a0: hartid, a1: dtb */
+    la a2, 1f
+    li a3, 0xffffffc000000000
+    add a2, a2, a3
+    csrw stvec, a2
+
+    li a2, 0x80100810
+    li a3, 0x200000cf
+    sd a3, 0(a2)
+
+    li a2, 0x8000000000080100
+    sfence.vma
+    csrw satp, a2
+
+.align 2
+1:
     la t0, DTB_BASE
     sd a1, 0(t0)
 

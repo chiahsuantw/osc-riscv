@@ -1,7 +1,7 @@
 #include "asm.h"
 
 .global handle_exception
-.align 4
+.align 2
 handle_exception:
     csrrw tp, sscratch, tp
     bnez tp, save_context

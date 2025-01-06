@@ -1,6 +1,8 @@
 #pragma once
 
-#define UART_BASE 0x10000000UL
+#include "vm.h"
+
+#define UART_BASE phys_to_virt(0x10000000UL)
 
 #ifdef __QEMU__
 #define UART_RBR (unsigned char *)(UART_BASE + 0x0)

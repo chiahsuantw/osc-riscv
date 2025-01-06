@@ -20,3 +20,6 @@ struct vm_area_struct {
     unsigned long vm_page_prot;
     struct list_head list;
 };
+
+#define virt_to_phys(x) ((unsigned long)(x) - PAGE_OFFSET)
+#define phys_to_virt(x) ((unsigned long)(x) + PAGE_OFFSET)

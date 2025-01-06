@@ -8,6 +8,10 @@ _start:
     add a2, a2, a3
     csrw stvec, a2
 
+    li a2, 0x80100800
+    li a3, 0x000000cf
+    sd a3, 0(a2)
+
     li a2, 0x80100810
     li a3, 0x200000cf
     sd a3, 0(a2)

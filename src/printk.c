@@ -3,7 +3,7 @@
 #include "uart.h"
 #include <stdarg.h>
 
-static char digits[] = "0123456789ABCDEF";
+static char digits[] = "0123456789abcdef";
 
 static void printint(long long xx, int base, int sign)
 {

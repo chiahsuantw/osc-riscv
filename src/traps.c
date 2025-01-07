@@ -10,6 +10,7 @@ void do_traps(struct pt_regs *regs)
         printk("sepc: %p\n", regs->epc);
         printk("sstatus: %p\n", regs->status);
         printk("scause: %p\n", regs->cause);
+        printk("stval: %p\n", regs->badaddr);
         while (1)
             ;
     }

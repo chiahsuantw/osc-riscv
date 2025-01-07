@@ -1,10 +1,11 @@
 #include "mm.h"
 #include "printk.h"
+#include "vm.h"
 
 extern u8 _end;
 static u8 *heap_top = &_end;
 
-#define NUM_PAGES 0x100000
+#define NUM_PAGES 0x140000
 
 // TODO: Calculate the max cache index based on the page size
 #define BUDDY_MAX_ORDER 10
@@ -47,7 +48,7 @@ void mem_init()
     }
 
     // Reserve the memory used by the kernel
-    reserve_memory(0, (u64)heap_top);
+    reserve_memory(0, (u64)virt_to_phys(heap_top));
 }
 
 static struct page *get_buddy(struct page *page, unsigned int order)
@@ -114,7 +115,7 @@ void *kmem_cache_alloc(unsigned int index)
     if (list_empty(&kmem_cache[index])) {
         struct page *page = alloc_pages(0);
         page->cacheidx = index;
-        unsigned long page_addr = (page - mem_map) * PAGE_SIZE;
+        unsigned long page_addr = phys_to_virt((page - mem_map) * PAGE_SIZE);
         unsigned int cache_size = CACHE_MIN_SIZE << index;
         for (int i = 0; i < PAGE_SIZE; i += cache_size) {
             struct object *obj = (struct object *)(page_addr + i);
@@ -130,7 +131,7 @@ void *kmem_cache_alloc(unsigned int index)
 
 void kmem_cache_free(void *ptr)
 {
-    struct page *page = &mem_map[(unsigned long)ptr / PAGE_SIZE];
+    struct page *page = &mem_map[(unsigned long)virt_to_phys(ptr) / PAGE_SIZE];
     struct object *obj = (struct object *)ptr;
     list_add_tail(&obj->list, &kmem_cache[page->cacheidx]);
 }
@@ -145,7 +146,7 @@ void *kmalloc(unsigned int size)
         while ((PAGE_SIZE << order) < size)
             order++;
         struct page *page = alloc_pages(order);
-        return (void *)((page - mem_map) * PAGE_SIZE);
+        return (void *)phys_to_virt((page - mem_map) * PAGE_SIZE);
     } else {
         int index = 0;
         while ((CACHE_MIN_SIZE << index) < size)
@@ -156,9 +157,9 @@ void *kmalloc(unsigned int size)
 
 void kfree(void *ptr)
 {
-    struct page *page = &mem_map[(unsigned long)ptr / PAGE_SIZE];
+    struct page *page = &mem_map[(unsigned long)virt_to_phys(ptr) / PAGE_SIZE];
     if (page->cacheidx == CACHE_UNALLOC) {
-        if ((unsigned long)ptr % PAGE_SIZE != 0)
+        if ((unsigned long)virt_to_phys(ptr) % PAGE_SIZE != 0)
             return;
         free_pages(page);
     } else {

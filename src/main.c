@@ -10,8 +10,6 @@
 int start_kernel()
 {
     printk("\nNYCU OSC RISC-V KERNEL\n");
-    while (1)
-        ;
     mem_init();
     kthread_init();
     timer_init();

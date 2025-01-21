@@ -1,5 +1,7 @@
 #include "sched.h"
 #include "mm.h"
+#include "string.h"
+#include "vm.h"
 
 static int nr_threads = 0;
 static struct list_head runqueue;
@@ -71,6 +73,8 @@ struct task_struct *kthread_create(void (*threadfn)())
     task->user_sp = task->user_stack + STACK_SIZE;
     task->context.ra = (unsigned long)threadfn;
     task->context.sp = task->kernel_sp;
+    task->pgd = kmalloc(PAGE_SIZE);
+    memcpy(task->pgd, (const void *)phys_to_virt(0x80100000), PAGE_SIZE);
     list_add_tail(&task->list, &runqueue);
     return task;
 }

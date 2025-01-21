@@ -24,6 +24,7 @@ struct task_struct {
     long user_sp;
     unsigned long kernel_stack;
     unsigned long user_stack;
+    void *pgd;
     struct list_head list;
 };
 

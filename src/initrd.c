@@ -4,8 +4,9 @@
 #include "sched.h"
 #include "string.h"
 #include "utils.h"
+#include "vm.h"
 
-void *INITRD_BASE = (void *)0xA0200000;
+void *INITRD_BASE = (void *)phys_to_virt(0xA0200000);
 
 void *initrd_get_next_hdr(const void *ptr)
 {
@@ -68,9 +69,20 @@ void initrd_exec(const char *target)
             void *program = kmalloc(filesize);
             memcpy(program, ptr + headsize, filesize);
             struct task_struct *task = kthread_create(program);
+
+            map_pages((unsigned long)task->pgd, 0x0, filesize,
+                      virt_to_phys(program), PAGE_RX);
+            map_pages((unsigned long)task->pgd, 0x3fffffb000, PAGE_SIZE * 4,
+                      virt_to_phys(task->user_stack), PAGE_RW);
+
+            asm("sfence.vma");
+            asm("csrw satp, %0" ::"r"((unsigned long)0x8 << 60 |
+                                      virt_to_phys(task->pgd) >> 12));
+            asm("sfence.vma");
+
             asm("csrw sscratch, %0" ::"r"(task));
-            asm("mv sp, %0" ::"r"(task->user_sp));
-            asm("csrw sepc, %0" ::"r"(program));
+            asm("mv sp, %0" ::"r"(0x3ffffff000));
+            asm("csrw sepc, %0" ::"r"(0x0));
             asm("li t0, (1 << 8);"
                 "csrc sstatus, t0;");
             asm("sret");

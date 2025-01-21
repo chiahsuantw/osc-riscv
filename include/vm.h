@@ -14,6 +14,10 @@
 #define PAGE_DIRTY    (1 << 7)
 #define PAGE_SOFT     (3 << 8)
 
+#define PAGE_BASE (PAGE_DIRTY | PAGE_ACCESSED | PAGE_USER | PAGE_PRESENT)
+#define PAGE_RX   (PAGE_BASE | PAGE_READ | PAGE_EXEC)
+#define PAGE_RW   (PAGE_BASE | PAGE_READ | PAGE_WRITE)
+
 struct vm_area_struct {
     unsigned long vm_start;
     unsigned long vm_end;
@@ -23,3 +27,6 @@ struct vm_area_struct {
 
 #define virt_to_phys(x) ((unsigned long)(x) - PAGE_OFFSET)
 #define phys_to_virt(x) ((unsigned long)(x) + PAGE_OFFSET)
+
+void map_pages(unsigned long pgd, unsigned long va, unsigned long size,
+               unsigned long pa, unsigned long prot);

@@ -75,3 +75,9 @@ int sys_kill(long pid)
     kthread_stop(task);
     return 0;
 }
+
+long sys_mmap(unsigned long addr, unsigned long len, unsigned long prot,
+              unsigned long flags, long offset)
+{
+    return 0;
+}

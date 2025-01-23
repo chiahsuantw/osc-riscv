@@ -2,9 +2,15 @@
 #include "irq.h"
 #include "printk.h"
 #include "syscall.h"
+#include "vm.h"
 
 void do_traps(struct pt_regs *regs)
 {
+    if (regs->cause >= 12 && regs->cause <= 15) {
+        do_page_fault(regs);
+        return;
+    }
+
     if (regs->cause != 8) {
         printk("[PANIC] Unknown exception\n");
         printk("sepc: %p\n", regs->epc);

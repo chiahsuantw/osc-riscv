@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "mm.h"
+#include "printk.h"
 #include "string.h"
 #include "traps.h"
 
@@ -28,4 +29,15 @@ void map_pages(unsigned long pgd, unsigned long va, unsigned long size,
 {
     for (int i = 0; i < size; i += PAGE_SIZE)
         pagewalk(pgd, va + i, pa + i, prot);
+}
+
+void do_page_fault(struct pt_regs *regs)
+{
+    printk("[PANIC] Page fault\n");
+    printk("sepc: %p\n", regs->epc);
+    printk("sstatus: %p\n", regs->status);
+    printk("scause: %p\n", regs->cause);
+    printk("stval: %p\n", regs->badaddr);
+    while (1)
+        ;
 }

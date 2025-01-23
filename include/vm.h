@@ -1,6 +1,7 @@
 #pragma once
 
 #include "list.h"
+#include "traps.h"
 
 #define PAGE_OFFSET 0xffffffc000000000
 
@@ -30,3 +31,4 @@ struct vm_area_struct {
 
 void map_pages(unsigned long pgd, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot);
+void do_page_fault(struct pt_regs *regs);

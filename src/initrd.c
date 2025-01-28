@@ -66,11 +66,11 @@ void initrd_exec(const char *target)
         int filesize = hextoi(hdr->filesize, 8);
         int headsize = align(sizeof(struct cpio_t) + namesize, 4);
         if (!memcmp(ptr + sizeof(struct cpio_t), target, namesize)) {
-            void *program = kmalloc(filesize);
+            void *program = kmalloc(PAGE_SIZE);
             memcpy(program, ptr + headsize, filesize);
             struct task_struct *task = kthread_create(program);
 
-            map_pages((unsigned long)task->pgd, 0x0, filesize,
+            map_pages((unsigned long)task->pgd, 0x0, PAGE_SIZE,
                       virt_to_phys(program), PAGE_RX);
             map_pages((unsigned long)task->pgd, 0x3fffffb000, PAGE_SIZE * 4,
                       virt_to_phys(task->user_stack), PAGE_RW);

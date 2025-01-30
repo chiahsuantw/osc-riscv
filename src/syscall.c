@@ -14,17 +14,29 @@ long sys_getpid()
 
 long sys_read(char *buf, long count)
 {
+    // Set sstatus.SUM to 1
+    asm("li t0, (1 << 18);"
+        "csrs sstatus, t0;");
     int i = 0;
     while (i < count)
         buf[i++] = uart_getc();
+    // Set sstatus.SUM to 0
+    asm("li t0, (1 << 18);"
+        "csrc sstatus, t0;");
     return i;
 }
 
 long sys_write(const char *buf, long count)
 {
+    // Set sstatus.SUM to 1
+    asm("li t0, (1 << 18);"
+        "csrs sstatus, t0;");
     int i = 0;
     while (i < count)
         uart_putc(buf[i++]);
+    // Set sstatus.SUM to 0
+    asm("li t0, (1 << 18);"
+        "csrc sstatus, t0;");
     return i;
 }
 

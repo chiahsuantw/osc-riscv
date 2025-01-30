@@ -66,13 +66,13 @@ void initrd_exec(const char *target)
         int filesize = hextoi(hdr->filesize, 8);
         int headsize = align(sizeof(struct cpio_t) + namesize, 4);
         if (!memcmp(ptr + sizeof(struct cpio_t), target, namesize)) {
-            void *program = kmalloc(PAGE_SIZE);
+            void *program = kmalloc(align(filesize, PAGE_SIZE));
             memcpy(program, ptr + headsize, filesize);
             struct task_struct *task = kthread_create(program);
 
-            map_pages((unsigned long)task->pgd, 0x0, PAGE_SIZE,
+            map_pages((unsigned long)task->pgd, 0x0, align(filesize, PAGE_SIZE),
                       virt_to_phys(program), PAGE_RX);
-            map_pages((unsigned long)task->pgd, 0x3fffffb000, PAGE_SIZE * 4,
+            map_pages((unsigned long)task->pgd, 0x3fffffc000, PAGE_SIZE * 4,
                       virt_to_phys(task->user_stack), PAGE_RW);
 
             asm("sfence.vma");
@@ -81,7 +81,7 @@ void initrd_exec(const char *target)
             asm("sfence.vma");
 
             asm("csrw sscratch, %0" ::"r"(task));
-            asm("mv sp, %0" ::"r"(0x3ffffff000));
+            asm("mv sp, %0" ::"r"(0x3fffffffff));
             asm("csrw sepc, %0" ::"r"(0x0));
             asm("li t0, (1 << 8);"
                 "csrc sstatus, t0;");

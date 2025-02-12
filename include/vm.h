@@ -29,6 +29,13 @@ struct vm_area_struct {
 #define virt_to_phys(x) ((unsigned long)(x) - PAGE_OFFSET)
 #define phys_to_virt(x) ((unsigned long)(x) + PAGE_OFFSET)
 
+// TODO: Refactor this
+#ifdef __QEMU__
+#define PGD_BASE 0x80100000
+#else
+#define PGD_BASE 0x40100000
+#endif
+
 void map_pages(unsigned long pgd, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot);
 void do_page_fault(struct pt_regs *regs);

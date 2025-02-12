@@ -8,6 +8,7 @@ _start:
     add a2, a2, a3
     csrw stvec, a2
 
+#ifdef __QEMU__
     li a2, 0x80100800
     li a3, 0x000000cf
     sd a3, 0(a2)
@@ -17,6 +18,17 @@ _start:
     sd a3, 0(a2)
 
     li a2, 0x8000000000080100
+#else
+    li a2, 0x40100800
+    li a3, 0x000000cf
+    sd a3, 0(a2)
+
+    li a2, 0x40100808
+    li a3, 0x100000cf
+    sd a3, 0(a2)
+
+    li a2, 0x8000000000040100
+#endif
     sfence.vma
     csrw satp, a2
 

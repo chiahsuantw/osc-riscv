@@ -46,6 +46,9 @@ void do_traps(struct pt_regs *regs)
     case 6:
         regs->a0 = sys_kill(regs->a0);
         break;
+    case 10:
+        regs->a0 = sys_mmap(regs->a0, regs->a1, regs->a2, regs->a3);
+        break;
     default:
         printk("[PANIC] Unknown syscall(%d)\n", regs->a7);
     }

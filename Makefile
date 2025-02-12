@@ -2,7 +2,7 @@ RISCVGUN ?= riscv64-unknown-elf
 
 CFLAGS = -I include -ffreestanding -mcmodel=medany -fomit-frame-pointer -Wall -g
 QEMUFLAGS = -M virt -smp 1 -m 4G -display none -serial stdio \
-			-kernel build/kernel.img \
+			-kernel build/kernel.bin \
 			-initrd res/initramfs.cpio
 LD_SCRIPT = src/kernel.ld
 
@@ -23,7 +23,7 @@ build:
 
 kernel: build
 	$(RISCVGUN)-ld -T $(LD_SCRIPT) -o build/kernel.elf $(OBJ_FILES)
-	$(RISCVGUN)-objcopy -O binary build/kernel.elf build/kernel.img
+	$(RISCVGUN)-objcopy -O binary build/kernel.elf build/kernel.bin
 	mkimage -f src/kernel.its kernel.fit > /dev/null
 
 qemu: CFLAGS += -D __QEMU__

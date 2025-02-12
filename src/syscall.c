@@ -89,7 +89,7 @@ int sys_kill(long pid)
 }
 
 long sys_mmap(unsigned long addr, unsigned long len, unsigned long prot,
-              unsigned long flags, long offset)
+              unsigned long flags)
 {
     return 0;
 }

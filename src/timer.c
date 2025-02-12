@@ -9,7 +9,7 @@ void timer_init()
 {
     INIT_LIST_HEAD(&timer_queue);
     enable_timer_interrupt();
-    sbi_set_timer(10000000); // TODO: Set the first timer interrupt
+    sbi_set_timer(TIME_FREQ);
 }
 
 void enable_timer_interrupt()
@@ -35,7 +35,7 @@ void timer_irq_handler()
     // Set up the next timer interrupt
     unsigned long ticks;
     asm("rdtime %0" : "=r"(ticks));
-    ticks += 10000000; // 1 second
+    ticks += TIME_FREQ;
     sbi_set_timer(ticks);
 
     // Check the timer queue
@@ -54,8 +54,7 @@ void timer_irq_handler()
 
 long get_uptime()
 {
-    // TODO: Get the timer frequency
-    unsigned long ticks, freq = 10000000;
+    unsigned long ticks, freq = TIME_FREQ;
     asm("rdtime %0" : "=r"(ticks));
     return ticks / freq;
 }

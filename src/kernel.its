@@ -7,7 +7,7 @@
 	images {
 		kernel {
 			description = "Kernel Image";
-			data = /incbin/("../build/kernel.img");
+			data = /incbin/("../build/kernel.bin");
 			type = "kernel";
 			arch = "riscv";
 			os = "linux";

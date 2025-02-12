@@ -6,7 +6,13 @@
 #include "utils.h"
 #include "vm.h"
 
-void *INITRD_BASE = (void *)phys_to_virt(0xA0200000);
+#ifdef __QEMU__
+#define INITRD_PHYS_BASE 0xA0200000
+#else
+#define INITRD_PHYS_BASE 0x46100000
+#endif
+
+void *INITRD_BASE = (void *)phys_to_virt(INITRD_PHYS_BASE);
 
 void *initrd_get_next_hdr(const void *ptr)
 {
@@ -72,7 +78,7 @@ void initrd_exec(const char *target)
 
             map_pages((unsigned long)task->pgd, 0x0, align(filesize, PAGE_SIZE),
                       virt_to_phys(program), PAGE_RX);
-            map_pages((unsigned long)task->pgd, 0x3fffffc000, PAGE_SIZE * 4,
+            map_pages((unsigned long)task->pgd, 0x3fffffb000, PAGE_SIZE * 4,
                       virt_to_phys(task->user_stack), PAGE_RW);
 
             asm("sfence.vma");
@@ -81,7 +87,7 @@ void initrd_exec(const char *target)
             asm("sfence.vma");
 
             asm("csrw sscratch, %0" ::"r"(task));
-            asm("mv sp, %0" ::"r"(0x3fffffffff));
+            asm("mv sp, %0" ::"r"(0x3ffffff000));
             asm("csrw sepc, %0" ::"r"(0x0));
             asm("li t0, (1 << 8);"
                 "csrc sstatus, t0;");

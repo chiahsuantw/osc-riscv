@@ -2,6 +2,12 @@
 
 #include "list.h"
 
+#ifdef __QEMU__
+#define TIME_FREQ 10000000
+#else
+#define TIME_FREQ 4000000
+#endif
+
 struct timer {
     void (*func)(void *);
     void *arg;

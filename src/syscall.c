@@ -40,7 +40,7 @@ long sys_write(const char *buf, long count)
     return i;
 }
 
-int sys_exec(const char *pathname, const char *const *argv)
+long sys_exec(const char *filename, const char *const *argv)
 {
     return 0;
 }
@@ -76,12 +76,13 @@ long sys_fork(struct pt_regs *regs)
     return child->pid;
 }
 
-void sys_exit(int status)
+long sys_exit(int error_code)
 {
     kthread_exit();
+    return 0;
 }
 
-int sys_kill(long pid)
+long sys_kill(long pid)
 {
     struct task_struct *task = find_task(pid);
     kthread_stop(task);

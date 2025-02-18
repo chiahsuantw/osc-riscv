@@ -82,12 +82,12 @@ long sys_exit(int error_code)
     return 0;
 }
 
-long sys_kill(long pid)
-{
-    struct task_struct *task = find_task(pid);
-    kthread_stop(task);
-    return 0;
-}
+// long sys_kill(long pid)
+// {
+//     struct task_struct *task = find_task(pid);
+//     kthread_stop(task);
+//     return 0;
+// }
 
 long sys_mmap(unsigned long addr, unsigned long len, unsigned long prot,
               unsigned long flags)

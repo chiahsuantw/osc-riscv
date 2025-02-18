@@ -1,6 +1,7 @@
 #include "traps.h"
 #include "irq.h"
 #include "printk.h"
+#include "sched.h"
 #include "syscall.h"
 #include "vm.h"
 
@@ -44,7 +45,9 @@ void do_traps(struct pt_regs *regs)
         sys_exit(0);
         break;
     case 6:
-        regs->a0 = sys_kill(regs->a0);
+        struct task_struct *task = find_task(regs->a0);
+        kthread_stop(task);
+        regs->a0 = 0;
         break;
     case 10:
         regs->a0 = sys_mmap(regs->a0, regs->a1, regs->a2, regs->a3);

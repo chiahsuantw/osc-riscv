@@ -1,5 +1,6 @@
 #include "mm.h"
 #include "printk.h"
+#include "string.h"
 #include "vm.h"
 
 extern u8 _end;
@@ -194,4 +195,16 @@ void reserve_memory(u64 addr, u64 size)
             }
         }
     }
+}
+
+unsigned long copy_user(void *to, const void *from, unsigned long n)
+{
+    // Set sstatus.SUM to 1
+    asm("li t0, (1 << 18);"
+        "csrs sstatus, t0;");
+    memcpy(to, from, n);
+    // Set sstatus.SUM to 0
+    asm("li t0, (1 << 18);"
+        "csrc sstatus, t0;");
+    return 0;
 }

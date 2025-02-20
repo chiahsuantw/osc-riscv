@@ -45,9 +45,22 @@ void do_traps(struct pt_regs *regs)
         sys_exit(0);
         break;
     case 6:
-        struct task_struct *task = find_task(regs->a0);
+        struct task_struct *task = find_task_by_pid(regs->a0);
+        if (!task) {
+            regs->a0 = -1;
+            break;
+        }
         kthread_stop(task);
         regs->a0 = 0;
+        break;
+    case 7:
+        regs->a0 = sys_signal(regs->a0, (void (*)())regs->a1);
+        break;
+    case 8:
+        regs->a0 = sys_sigreturn(regs);
+        break;
+    case 9:
+        regs->a0 = sys_kill(regs->a0, regs->a1);
         break;
     case 10:
         regs->a0 = sys_mmap(regs->a0, regs->a1, regs->a2, regs->a3);
@@ -55,4 +68,6 @@ void do_traps(struct pt_regs *regs)
     default:
         printk("[PANIC] Unknown syscall(%d)\n", regs->a7);
     }
+
+    do_signal(regs);
 }

@@ -84,7 +84,7 @@ long sys_exit(int error_code)
 
 // long sys_kill(long pid)
 // {
-//     struct task_struct *task = find_task(pid);
+//     struct task_struct *task = find_task_by_pid(pid);
 //     kthread_stop(task);
 //     return 0;
 // }

@@ -1,5 +1,6 @@
 #include "sched.h"
 #include "mm.h"
+#include "signal.h"
 #include "string.h"
 #include "vm.h"
 
@@ -15,7 +16,7 @@ struct task_struct *get_current()
     return current;
 }
 
-struct task_struct *find_task(int pid)
+struct task_struct *find_task_by_pid(int pid)
 {
     struct list_head *pos;
     list_for_each(pos, &runqueue) {
@@ -48,7 +49,6 @@ void kill_zombies()
 
 void idle()
 {
-    // TODO: Can we remove the loop?
     while (1) {
         kill_zombies();
         schedule();
@@ -75,6 +75,9 @@ struct task_struct *kthread_create(void (*threadfn)())
     task->context.sp = task->kernel_sp;
     task->pgd = kmalloc(PAGE_SIZE);
     memcpy(task->pgd, (const void *)phys_to_virt(PGD_BASE), PAGE_SIZE);
+    memset(task->sighand, SIG_DFL, sizeof(task->sighand));
+    task->blocked = 0;
+    task->pending = 0;
     list_add_tail(&task->list, &runqueue);
     return task;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "list.h"
+#include "signal.h"
 
 #define STACK_SIZE 0x2000
 
@@ -25,11 +26,14 @@ struct task_struct {
     unsigned long kernel_stack;
     unsigned long user_stack;
     void *pgd;
+    void (*sighand[_NSIG])();
+    sigset_t blocked;
+    sigset_t pending;
     struct list_head list;
 };
 
 struct task_struct *get_current();
-struct task_struct *find_task(int pid);
+struct task_struct *find_task_by_pid(int pid);
 void schedule();
 void idle();
 void kthread_init();

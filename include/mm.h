@@ -25,3 +25,5 @@ void kfree(void *ptr);
 void mem_init();
 void reserve_memory(u64 addr, u64 size);
 void dump_buddy_info();
+
+unsigned long copy_user(void *to, const void *from, unsigned long n);

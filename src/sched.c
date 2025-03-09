@@ -1,4 +1,5 @@
 #include "sched.h"
+#include "list.h"
 #include "mm.h"
 #include "signal.h"
 #include "string.h"
@@ -69,12 +70,13 @@ struct task_struct *kthread_create(void (*threadfn)())
     task->state = TASK_RUNNING;
     task->kernel_stack = (unsigned long)kmalloc(STACK_SIZE);
     task->user_stack = (unsigned long)kmalloc(STACK_SIZE);
-    task->kernel_sp = task->kernel_stack + STACK_SIZE;
-    task->user_sp = task->user_stack + STACK_SIZE;
-    task->context.ra = (unsigned long)threadfn;
-    task->context.sp = task->kernel_sp;
-    task->pgd = kmalloc(PAGE_SIZE);
-    memcpy(task->pgd, (const void *)phys_to_virt(PGD_BASE), PAGE_SIZE);
+    task->thread_info.kernel_sp = task->kernel_stack + STACK_SIZE;
+    task->thread_info.user_sp = task->user_stack + STACK_SIZE;
+    task->thread.ra = (unsigned long)threadfn;
+    task->thread.sp = task->thread_info.kernel_sp;
+    INIT_LIST_HEAD(&task->mm.mmap);
+    task->mm.pgd = kmalloc(PAGE_SIZE);
+    memcpy(task->mm.pgd, (const void *)phys_to_virt(PGD_BASE), PAGE_SIZE);
     memset(task->sighand, SIG_DFL, sizeof(task->sighand));
     task->blocked = 0;
     task->pending = 0;

@@ -65,7 +65,7 @@ void fork_test()
 {
     // Switch to the user mode
     asm("csrw sscratch, %0" ::"r"(get_current()));
-    asm("mv sp, %0" ::"r"(get_current()->user_sp));
+    asm("mv sp, %0" ::"r"(get_current()->thread_info.user_sp));
     asm("csrw sepc, %0" ::"r"(do_fork_test));
     asm("li t0, (1 << 8);"
         "csrc sstatus, t0;");

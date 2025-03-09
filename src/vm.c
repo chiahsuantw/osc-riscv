@@ -4,10 +4,10 @@
 #include "string.h"
 #include "traps.h"
 
-static void pagewalk(unsigned long pgd, unsigned long va, unsigned long pa,
+static void pagewalk(struct mm_struct *mm, unsigned long va, unsigned long pa,
                      unsigned long prot)
 {
-    unsigned long *pte = (unsigned long *)pgd;
+    unsigned long *pte = (unsigned long *)mm->pgd;
     for (int level = 2; level >= 0; level--) {
         unsigned long idx = (va >> (12 + 9 * level)) & 0x1ff;
         if (level == 0) {
@@ -23,11 +23,11 @@ static void pagewalk(unsigned long pgd, unsigned long va, unsigned long pa,
     }
 }
 
-void map_pages(unsigned long pgd, unsigned long va, unsigned long size,
+void map_pages(struct mm_struct *mm, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot)
 {
     for (int i = 0; i < size; i += PAGE_SIZE)
-        pagewalk(pgd, va + i, pa + i, prot);
+        pagewalk(mm, va + i, pa + i, prot);
 }
 
 void do_page_fault(struct pt_regs *regs)

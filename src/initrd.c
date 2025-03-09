@@ -76,14 +76,14 @@ void initrd_exec(const char *target)
             memcpy(program, ptr + headsize, filesize);
             struct task_struct *task = kthread_create(program);
 
-            map_pages((unsigned long)task->pgd, 0x0, align(filesize, PAGE_SIZE),
+            map_pages(&task->mm, 0x0, align(filesize, PAGE_SIZE),
                       virt_to_phys(program), PAGE_RX);
-            map_pages((unsigned long)task->pgd, 0x3fffffb000, PAGE_SIZE * 4,
+            map_pages(&task->mm, 0x3fffffb000, PAGE_SIZE * 4,
                       virt_to_phys(task->user_stack), PAGE_RW);
 
             asm("sfence.vma");
             asm("csrw satp, %0" ::"r"((unsigned long)0x8 << 60 |
-                                      virt_to_phys(task->pgd) >> 12));
+                                      virt_to_phys(task->mm.pgd) >> 12));
             asm("sfence.vma");
 
             asm("csrw sscratch, %0" ::"r"(task));

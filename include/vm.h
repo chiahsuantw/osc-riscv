@@ -19,6 +19,11 @@
 #define PAGE_RX   (PAGE_BASE | PAGE_READ | PAGE_EXEC)
 #define PAGE_RW   (PAGE_BASE | PAGE_READ | PAGE_WRITE)
 
+struct mm_struct {
+    struct list_head mmap;
+    unsigned long *pgd;
+};
+
 struct vm_area_struct {
     unsigned long vm_start;
     unsigned long vm_end;
@@ -36,6 +41,6 @@ struct vm_area_struct {
 #define PGD_BASE 0x40100000
 #endif
 
-void map_pages(unsigned long pgd, unsigned long va, unsigned long size,
+void map_pages(struct mm_struct *mm, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot);
 void do_page_fault(struct pt_regs *regs);

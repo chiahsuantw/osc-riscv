@@ -2,6 +2,7 @@
 
 #include "list.h"
 #include "signal.h"
+#include "vm.h"
 
 #define STACK_SIZE 0x2000
 
@@ -11,21 +12,24 @@ struct thread_struct {
     unsigned long s[12]; /* s[0]: frame pointer */
 };
 
+struct thread_info {
+    long kernel_sp;
+    long user_sp;
+};
+
 enum task_state {
     TASK_RUNNING,
     TASK_ZOMBIE,
 };
 
 struct task_struct {
-    /* Do not change the first five fields */
-    struct thread_struct context;
+    struct thread_struct thread;
+    struct thread_info thread_info;
     long pid;
     enum task_state state;
-    long kernel_sp;
-    long user_sp;
     unsigned long kernel_stack;
     unsigned long user_stack;
-    void *pgd;
+    struct mm_struct mm;
     void (*sighand[_NSIG])();
     sigset_t blocked;
     sigset_t pending;

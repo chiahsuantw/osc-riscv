@@ -59,8 +59,8 @@ long sys_fork(struct pt_regs *regs)
     unsigned long sp_off = (unsigned long)regs - parent->kernel_stack;
     struct pt_regs *childregs =
         (struct pt_regs *)(child->kernel_stack + sp_off);
-    child->context.ra = (unsigned long)ret_from_exception;
-    child->context.sp = (unsigned long)childregs;
+    child->thread.ra = (unsigned long)ret_from_exception;
+    child->thread.sp = (unsigned long)childregs;
 
     unsigned long user_sp_off = regs->sp - parent->user_stack;
     childregs->sp = child->user_stack + user_sp_off;

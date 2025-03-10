@@ -16,8 +16,14 @@
 #define PAGE_SOFT     (3 << 8)
 
 #define PAGE_BASE (PAGE_DIRTY | PAGE_ACCESSED | PAGE_USER | PAGE_PRESENT)
-#define PAGE_RX   (PAGE_BASE | PAGE_READ | PAGE_EXEC)
-#define PAGE_RW   (PAGE_BASE | PAGE_READ | PAGE_WRITE)
+
+#define PROT_NONE  0x0
+#define PROT_READ  0x1
+#define PROT_WRITE 0x2
+#define PROT_EXEC  0x4
+
+#define MAP_ANONYMOUS 0x20
+#define MAP_POPULATE  0x8000
 
 struct mm_struct {
     struct list_head mmap;
@@ -28,6 +34,7 @@ struct vm_area_struct {
     unsigned long vm_start;
     unsigned long vm_end;
     unsigned long vm_page_prot;
+    unsigned long vm_file;
     struct list_head list;
 };
 
@@ -43,4 +50,6 @@ struct vm_area_struct {
 
 void map_pages(struct mm_struct *mm, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot);
+void vm_mmap(struct mm_struct *mm, unsigned long file, unsigned long addr,
+             unsigned long len, unsigned long prot, unsigned long flags);
 void do_page_fault(struct pt_regs *regs);

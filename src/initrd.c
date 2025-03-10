@@ -76,10 +76,11 @@ void initrd_exec(const char *target)
             memcpy(program, ptr + headsize, filesize);
             struct task_struct *task = kthread_create(program);
 
-            map_pages(&task->mm, 0x0, align(filesize, PAGE_SIZE),
-                      virt_to_phys(program), PAGE_RX);
-            map_pages(&task->mm, 0x3fffffb000, PAGE_SIZE * 4,
-                      virt_to_phys(task->user_stack), PAGE_RW);
+            vm_mmap(&task->mm, (unsigned long)program, 0x0,
+                    align(filesize, PAGE_SIZE), PROT_READ | PROT_EXEC, 0);
+            // FIXME: allocate the user stack on demand
+            vm_mmap(&task->mm, 0, 0x3fffffb000, PAGE_SIZE * 4,
+                    PROT_READ | PROT_WRITE, 0);
 
             asm("sfence.vma");
             asm("csrw satp, %0" ::"r"((unsigned long)0x8 << 60 |

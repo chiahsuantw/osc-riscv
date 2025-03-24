@@ -72,15 +72,12 @@ void initrd_exec(const char *target)
         int filesize = hextoi(hdr->filesize, 8);
         int headsize = align(sizeof(struct cpio_t) + namesize, 4);
         if (!memcmp(ptr + sizeof(struct cpio_t), target, namesize)) {
-            void *program = kmalloc(align(filesize, PAGE_SIZE));
-            memcpy(program, ptr + headsize, filesize);
-            struct task_struct *task = kthread_create(program);
+            struct task_struct *task = kthread_create(0);
 
-            vm_mmap(&task->mm, (unsigned long)program, 0x0,
-                    align(filesize, PAGE_SIZE), PROT_READ | PROT_EXEC, 0);
-            // FIXME: allocate the user stack on demand
+            vm_mmap(&task->mm, (unsigned long)(ptr + headsize), 0x0,
+                    align(filesize, PAGE_SIZE), VM_READ | VM_EXEC, 0);
             vm_mmap(&task->mm, 0, 0x3fffffb000, PAGE_SIZE * 4,
-                    PROT_READ | PROT_WRITE, 0);
+                    VM_READ | VM_WRITE, 0);
 
             asm("sfence.vma");
             asm("csrw satp, %0" ::"r"((unsigned long)0x8 << 60 |

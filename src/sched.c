@@ -69,6 +69,7 @@ struct task_struct *kthread_create(void (*threadfn)())
     task->pid = nr_threads++;
     task->state = TASK_RUNNING;
     task->kernel_stack = (unsigned long)kmalloc(STACK_SIZE);
+    // FIXME: Allocate the user stack on demand (remove thread_info.user_sp will cause an error)
     task->user_stack = (unsigned long)kmalloc(STACK_SIZE);
     task->thread_info.kernel_sp = task->kernel_stack + STACK_SIZE;
     task->thread_info.user_sp = task->user_stack + STACK_SIZE;

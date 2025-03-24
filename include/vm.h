@@ -5,6 +5,7 @@
 
 #define PAGE_OFFSET 0xffffffc000000000
 
+/* Page protection bits */
 #define PAGE_PRESENT  (1 << 0)
 #define PAGE_READ     (1 << 1)
 #define PAGE_WRITE    (1 << 2)
@@ -15,13 +16,19 @@
 #define PAGE_DIRTY    (1 << 7)
 #define PAGE_SOFT     (3 << 8)
 
-#define PAGE_BASE (PAGE_DIRTY | PAGE_ACCESSED | PAGE_USER | PAGE_PRESENT)
+// #define PAGE_BASE (PAGE_DIRTY | PAGE_ACCESSED | PAGE_USER | PAGE_PRESENT)
 
-#define PROT_NONE  0x0
-#define PROT_READ  0x1
-#define PROT_WRITE 0x2
-#define PROT_EXEC  0x4
+/* Flags (vm_flags) for virtual memory areas */
+#define VM_NONE  0x0
+#define VM_READ  0x1
+#define VM_WRITE 0x2
+#define VM_EXEC  0x4
 
+/* Protections and flags for mmap */
+#define PROT_NONE     0x0
+#define PROT_READ     0x1
+#define PROT_WRITE    0x2
+#define PROT_EXEC     0x4
 #define MAP_ANONYMOUS 0x20
 #define MAP_POPULATE  0x8000
 
@@ -33,7 +40,7 @@ struct mm_struct {
 struct vm_area_struct {
     unsigned long vm_start;
     unsigned long vm_end;
-    unsigned long vm_page_prot;
+    unsigned long vm_flags;
     unsigned long vm_file;
     struct list_head list;
 };

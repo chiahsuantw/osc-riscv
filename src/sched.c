@@ -28,10 +28,22 @@ struct task_struct *find_task_by_pid(int pid)
     return 0;
 }
 
+void switch_mm(unsigned long pgd, unsigned long satp_mode)
+{
+    asm("sfence.vma");
+    asm("csrw satp, %0" ::"r"(satp_mode << 60 | virt_to_phys(pgd) >> 12));
+    asm("sfence.vma");
+}
+
 void schedule()
 {
+    if (list_count_nodes(&runqueue) <= 1)
+        return;
     struct task_struct *current = get_current();
-    switch_to(current, list_next_entry_circular(current, &runqueue, list));
+    struct task_struct *next =
+        list_next_entry_circular(current, &runqueue, list);
+    switch_mm((unsigned long)next->mm.pgd, 0x8);
+    switch_to(current, next);
 }
 
 void kill_zombies()
@@ -41,9 +53,9 @@ void kill_zombies()
         struct task_struct *task = list_entry(pos, struct task_struct, list);
         if (task->state == TASK_ZOMBIE) {
             list_del_init(&task->list);
-            kfree((void *)task->kernel_stack);
-            kfree((void *)task->user_stack);
-            kfree(task);
+            // kfree((void *)task->stack);
+            // kfree((void *)task->user_stack);
+            // kfree(task);
         }
     }
 }
@@ -68,13 +80,10 @@ struct task_struct *kthread_create(void (*threadfn)())
     struct task_struct *task = kmalloc(sizeof(struct task_struct));
     task->pid = nr_threads++;
     task->state = TASK_RUNNING;
-    task->kernel_stack = (unsigned long)kmalloc(STACK_SIZE);
-    // FIXME: Allocate the user stack on demand (remove thread_info.user_sp will cause an error)
-    task->user_stack = (unsigned long)kmalloc(STACK_SIZE);
-    task->thread_info.kernel_sp = task->kernel_stack + STACK_SIZE;
-    task->thread_info.user_sp = task->user_stack + STACK_SIZE;
+    task->stack = (unsigned long)kmalloc(STACK_SIZE);
     task->thread.ra = (unsigned long)threadfn;
-    task->thread.sp = task->thread_info.kernel_sp;
+    task->thread.sp = task->stack + STACK_SIZE;
+    task->thread_info.kernel_sp = task->thread.sp;
     INIT_LIST_HEAD(&task->mm.mmap);
     task->mm.pgd = kmalloc(PAGE_SIZE);
     memcpy(task->mm.pgd, (const void *)phys_to_virt(PGD_BASE), PAGE_SIZE);

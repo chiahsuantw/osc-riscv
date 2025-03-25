@@ -27,8 +27,7 @@ struct task_struct {
     struct thread_info thread_info;
     long pid;
     enum task_state state;
-    unsigned long kernel_stack;
-    unsigned long user_stack;
+    unsigned long stack;
     struct mm_struct mm;
     void (*sighand[_NSIG])();
     sigset_t blocked;
@@ -38,6 +37,7 @@ struct task_struct {
 
 struct task_struct *get_current();
 struct task_struct *find_task_by_pid(int pid);
+void switch_mm(unsigned long pgd, unsigned long satp_mode);
 void schedule();
 void idle();
 void kthread_init();

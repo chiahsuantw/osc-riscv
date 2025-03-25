@@ -40,6 +40,7 @@ struct mm_struct {
 struct vm_area_struct {
     unsigned long vm_start;
     unsigned long vm_end;
+    struct mm_struct *vm_mm;
     unsigned long vm_flags;
     unsigned long vm_file;
     struct list_head list;
@@ -59,4 +60,5 @@ void map_pages(struct mm_struct *mm, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot);
 void vm_mmap(struct mm_struct *mm, unsigned long file, unsigned long addr,
              unsigned long len, unsigned long prot, unsigned long flags);
+void dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm);
 void do_page_fault(struct pt_regs *regs);

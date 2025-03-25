@@ -41,9 +41,48 @@ void vm_mmap(struct mm_struct *mm, unsigned long file, unsigned long addr,
     struct vm_area_struct *vma = kmalloc(sizeof(struct vm_area_struct));
     vma->vm_start = addr;
     vma->vm_end = addr + len;
+    vma->vm_mm = mm;
     vma->vm_flags = prot;
     vma->vm_file = file;
     list_add_tail(&vma->list, &mm->mmap);
+}
+
+void copy_page_range(struct vm_area_struct *dst_vma,
+                     struct vm_area_struct *src_vma)
+{
+    for (unsigned long addr = src_vma->vm_start; addr < src_vma->vm_end;
+         addr += PAGE_SIZE) {
+        unsigned long *src_pt = (unsigned long *)src_vma->vm_mm->pgd;
+        unsigned long *dst_pt = (unsigned long *)dst_vma->vm_mm->pgd;
+        for (int level = 2; level >= 0; level--) {
+            long idx = (addr >> (12 + 9 * level)) & 0x1ff;
+            if (src_pt[idx] != 0 && dst_pt[idx] == 0) {
+                unsigned long *page_addr = (unsigned long *)kmalloc(PAGE_SIZE);
+                memset(page_addr, 0, PAGE_SIZE);
+                dst_pt[idx] = virt_to_phys(page_addr) >> 2 | PAGE_PRESENT;
+                if (level == 0) {
+                    src_pt[idx] &= ~PAGE_WRITE;
+                    dst_pt[idx] = src_pt[idx];
+                }
+            }
+            src_pt = (unsigned long *)phys_to_virt((src_pt[idx] & ~0x3ff) << 2);
+            dst_pt = (unsigned long *)phys_to_virt((dst_pt[idx] & ~0x3ff) << 2);
+        }
+    }
+}
+
+void dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+{
+    struct list_head *pos;
+    list_for_each(pos, &oldmm->mmap) {
+        struct vm_area_struct *old_vma =
+            list_entry(pos, struct vm_area_struct, list);
+        struct vm_area_struct *vma = kmalloc(sizeof(struct vm_area_struct));
+        memcpy(vma, old_vma, sizeof(struct vm_area_struct));
+        vma->vm_mm = mm;
+        copy_page_range(vma, old_vma);
+        list_add_tail(&vma->list, &mm->mmap);
+    }
 }
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
@@ -127,9 +166,13 @@ void do_page_fault(struct pt_regs *regs)
             memset(page_addr, 0, PAGE_SIZE);
         }
         *pte = mk_pte((unsigned long)page_addr, vma->vm_flags);
-    } else if (regs->cause == 15) { // do_wp_page
-
+    } else if (regs->cause == 15) {
+        printk("do_wp_page: cow mapping\n");
+        while (1)
+            ;
     } else {
         printk("do_page_fault: unhandled page fault (%ld)\n", regs->cause);
     }
+
+    asm("sfence.vma");
 }

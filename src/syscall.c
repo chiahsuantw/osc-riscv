@@ -1,9 +1,11 @@
 #include "syscall.h"
 #include "irq.h"
+#include "mm.h"
 #include "sched.h"
 #include "string.h"
 #include "traps.h"
 #include "uart.h"
+#include "vm.h"
 
 extern void ret_from_exception();
 
@@ -51,26 +53,19 @@ long sys_fork(struct pt_regs *regs)
     struct task_struct *parent = get_current();
     struct task_struct *child = kthread_create(0);
 
-    // Copy the kernel stack and the user stack
-    memcpy((void *)child->kernel_stack, (void *)parent->kernel_stack,
-           STACK_SIZE);
-    memcpy((void *)child->user_stack, (void *)parent->user_stack, STACK_SIZE);
+    // Copy kernel stack
+    memcpy((void *)child->stack, (void *)parent->stack, STACK_SIZE);
+    // Copy VMA list, increase the refcount, and mark the pages as read-only
+    dup_mmap(&child->mm, &parent->mm);
+    // Copy signal handlers
+    memcpy(child->sighand, parent->sighand, sizeof(parent->sighand));
 
-    unsigned long sp_off = (unsigned long)regs - parent->kernel_stack;
-    struct pt_regs *childregs =
-        (struct pt_regs *)(child->kernel_stack + sp_off);
+    unsigned long sp_offset = (unsigned long)regs - parent->stack;
+    struct pt_regs *childregs = (struct pt_regs *)(child->stack + sp_offset);
     child->thread.ra = (unsigned long)ret_from_exception;
     child->thread.sp = (unsigned long)childregs;
-
-    unsigned long user_sp_off = regs->sp - parent->user_stack;
-    childregs->sp = child->user_stack + user_sp_off;
+    childregs->sp = regs->sp;
     childregs->a0 = 0;
-
-    // RISC-V uses s0 (fp) to calcuate the offset of variables in the stack
-    // childregs->s0 = regs->s0 + (child->kernel_stack - parent->kernel_stack);
-    // Add an offset to the previous frame pointer
-    // *(unsigned long *)(childregs->s0 - 8) +=
-    //     (child->kernel_stack - parent->kernel_stack);
 
     enable_interrupt();
     return child->pid;

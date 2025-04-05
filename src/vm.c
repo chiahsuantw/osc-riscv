@@ -47,6 +47,11 @@ void vm_mmap(struct mm_struct *mm, unsigned long file, unsigned long addr,
     list_add_tail(&vma->list, &mm->mmap);
 }
 
+void *pte_to_virt(unsigned long pte)
+{
+    return (void *)phys_to_virt((pte & ~0x3ff) << 2);
+}
+
 void copy_page_range(struct vm_area_struct *dst_vma,
                      struct vm_area_struct *src_vma)
 {
@@ -63,6 +68,7 @@ void copy_page_range(struct vm_area_struct *dst_vma,
                 if (level == 0) {
                     src_pt[idx] &= ~PAGE_WRITE;
                     dst_pt[idx] = src_pt[idx];
+                    get_page(virt_to_page(pte_to_virt(src_pt[idx])));
                 }
             }
             src_pt = (unsigned long *)phys_to_virt((src_pt[idx] & ~0x3ff) << 2);
@@ -83,6 +89,7 @@ void dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
         copy_page_range(vma, old_vma);
         list_add_tail(&vma->list, &mm->mmap);
     }
+    asm("sfence.vma");
 }
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
@@ -100,11 +107,11 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 int access_error(unsigned long cause, struct vm_area_struct *vma)
 {
     switch (cause) {
-    case 12:
+    case EXC_INST_PAGE_FAULT:
         return !(vma->vm_flags & VM_EXEC);
-    case 13:
+    case EXC_LOAD_PAGE_FAULT:
         return !(vma->vm_flags & (VM_READ | VM_WRITE));
-    case 15:
+    case EXC_STORE_PAGE_FAULT:
         return !(vma->vm_flags & VM_WRITE);
     default:
         printk("access_error: unhandled cause %ld\n", cause);
@@ -157,7 +164,7 @@ void do_page_fault(struct pt_regs *regs)
     unsigned long addr = regs->badaddr & ~(PAGE_SIZE - 1);
     unsigned long *pte = pte_alloc_map(mm, addr);
 
-    if (!*pte) {
+    if (!*pte) { /* Demand paging */
         unsigned long *page_addr = kmalloc(PAGE_SIZE);
         if (vma->vm_file) {
             unsigned long off = addr - vma->vm_start;
@@ -166,12 +173,20 @@ void do_page_fault(struct pt_regs *regs)
             memset(page_addr, 0, PAGE_SIZE);
         }
         *pte = mk_pte((unsigned long)page_addr, vma->vm_flags);
-    } else if (regs->cause == 15) {
-        printk("do_wp_page: cow mapping\n");
-        while (1)
-            ;
+    } else if (regs->cause == 15 && !(*pte & PAGE_WRITE)) { /* Copy-on-Write */
+        struct page *old_page = virt_to_page(pte_to_virt(*pte));
+        if (old_page->refcount > 1) {
+            struct page *new_page = alloc_pages(0);
+            memcpy(page_to_virt(new_page), page_to_virt(old_page), PAGE_SIZE);
+            *pte = mk_pte((unsigned long)page_to_virt(new_page), vma->vm_flags);
+            put_page(old_page);
+        } else {
+            *pte |= PAGE_WRITE;
+        }
     } else {
         printk("do_page_fault: unhandled page fault (%ld)\n", regs->cause);
+        while (1)
+            ;
     }
 
     asm("sfence.vma");

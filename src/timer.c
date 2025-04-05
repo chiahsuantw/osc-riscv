@@ -1,7 +1,6 @@
 #include "timer.h"
 #include "mm.h"
 #include "sbi.h"
-#include "sched.h"
 #include "uart.h"
 
 static struct list_head timer_queue;
@@ -38,9 +37,6 @@ void timer_irq_handler()
     asm("rdtime %0" : "=r"(ticks));
     ticks += (TIME_FREQ / 32);
     sbi_set_timer(ticks);
-
-    // Schedule the next task
-    schedule();
 
     // Check the timer queue
     while (!list_empty(&timer_queue)) {

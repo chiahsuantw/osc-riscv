@@ -41,6 +41,7 @@ void mem_init()
         mem_map[i].order = 0;
         mem_map[i].used = 0;
         mem_map[i].cacheidx = CACHE_UNALLOC;
+        mem_map[i].refcount = 0;
         INIT_LIST_HEAD(&mem_map[i].list);
         if (i % (1 << BUDDY_MAX_ORDER) == 0) {
             mem_map[i].order = BUDDY_MAX_ORDER;
@@ -68,6 +69,7 @@ struct page *alloc_pages(unsigned int order)
         list_del_init(&page->list);
         page->order = order;
         page->used = 1;
+        page->refcount = 1;
 
         while (i > order) {
             i--;
@@ -75,6 +77,7 @@ struct page *alloc_pages(unsigned int order)
             buddy->order = i;
             list_add(&buddy->list, &free_area[i]);
         }
+
         return page;
     }
     return 0;
@@ -97,7 +100,18 @@ void free_pages(struct page *page)
 
     current->order = order;
     current->used = 0;
+    current->refcount = 0;
     list_add(&current->list, &free_area[order]);
+}
+
+void *page_to_virt(struct page *page)
+{
+    return (void *)phys_to_virt((page - mem_map) * PAGE_SIZE);
+}
+
+struct page *virt_to_page(void *addr)
+{
+    return &mem_map[virt_to_phys(addr) / PAGE_SIZE];
 }
 
 void dump_buddy_info()
@@ -132,7 +146,7 @@ void *kmem_cache_alloc(unsigned int index)
 
 void kmem_cache_free(void *ptr)
 {
-    struct page *page = &mem_map[(unsigned long)virt_to_phys(ptr) / PAGE_SIZE];
+    struct page *page = virt_to_page(ptr);
     struct object *obj = (struct object *)ptr;
     list_add_tail(&obj->list, &kmem_cache[page->cacheidx]);
 }
@@ -147,7 +161,7 @@ void *kmalloc(unsigned int size)
         while ((PAGE_SIZE << order) < size)
             order++;
         struct page *page = alloc_pages(order);
-        return (void *)phys_to_virt((page - mem_map) * PAGE_SIZE);
+        return page_to_virt(page);
     } else {
         int index = 0;
         while ((CACHE_MIN_SIZE << index) < size)
@@ -158,7 +172,7 @@ void *kmalloc(unsigned int size)
 
 void kfree(void *ptr)
 {
-    struct page *page = &mem_map[(unsigned long)virt_to_phys(ptr) / PAGE_SIZE];
+    struct page *page = virt_to_page(ptr);
     if (page->cacheidx == CACHE_UNALLOC) {
         if ((unsigned long)virt_to_phys(ptr) % PAGE_SIZE != 0)
             return;
@@ -207,4 +221,16 @@ unsigned long copy_user(void *to, const void *from, unsigned long n)
     asm("li t0, (1 << 18);"
         "csrc sstatus, t0;");
     return 0;
+}
+
+void get_page(struct page *page)
+{
+    page->refcount++;
+}
+
+void put_page(struct page *page)
+{
+    page->refcount--;
+    if (page->refcount == 0)
+        free_pages(page);
 }

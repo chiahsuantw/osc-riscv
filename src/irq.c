@@ -2,6 +2,7 @@
 #include "irq.h"
 #include "mm.h"
 #include "printk.h"
+#include "sched.h"
 #include "timer.h"
 
 static struct list_head irq_tasks;
@@ -53,6 +54,7 @@ void do_irq(struct pt_regs *regs)
     disable_interrupt();
     if (0) {        // UART interrupt
     } else if (1) { // Timer interrupt
+        schedule();
         disable_timer_interrupt();
         irq_add_task(timer_irq_handler, 1);
     }

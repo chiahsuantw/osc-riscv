@@ -3,16 +3,19 @@
 #include "printk.h"
 #include "sched.h"
 #include "syscall.h"
+#include "traps.h"
 #include "vm.h"
 
 void do_traps(struct pt_regs *regs)
 {
-    if (regs->cause >= 12 && regs->cause <= 15) {
+    if (regs->cause == EXC_INST_PAGE_FAULT ||
+        regs->cause == EXC_LOAD_PAGE_FAULT ||
+        regs->cause == EXC_STORE_PAGE_FAULT) {
         do_page_fault(regs);
         return;
     }
 
-    if (regs->cause != 8) {
+    if (regs->cause != EXC_SYSCALL) {
         printk("[PANIC] Unknown exception\n");
         printk("sepc: %p\n", regs->epc);
         printk("sstatus: %p\n", regs->status);

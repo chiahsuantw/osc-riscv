@@ -1,5 +1,11 @@
 #pragma once
 
+/* Exception causes */
+#define EXC_SYSCALL          8
+#define EXC_INST_PAGE_FAULT  12
+#define EXC_LOAD_PAGE_FAULT  13
+#define EXC_STORE_PAGE_FAULT 15
+
 struct pt_regs {
     unsigned long epc;
     unsigned long ra;

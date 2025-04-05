@@ -62,10 +62,9 @@ long sys_fork(struct pt_regs *regs)
 
     unsigned long sp_offset = (unsigned long)regs - parent->stack;
     struct pt_regs *childregs = (struct pt_regs *)(child->stack + sp_offset);
+    childregs->a0 = 0;
     child->thread.ra = (unsigned long)ret_from_exception;
     child->thread.sp = (unsigned long)childregs;
-    childregs->sp = regs->sp;
-    childregs->a0 = 0;
 
     enable_interrupt();
     return child->pid;

@@ -3,6 +3,13 @@
 #include "list.h"
 #include "traps.h"
 
+#define RISCV_XLEN 64
+
+/* Interrupt causes (minus the high bit) */
+#define IRQ_CAUSE(x) ((x) & ~(1UL << (RISCV_XLEN - 1)))
+#define IRQ_S_TIMER  5
+#define IRQ_S_EXT    9
+
 struct irq_task {
     void (*handler)();
     int priority;

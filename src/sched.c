@@ -37,11 +37,11 @@ void switch_mm(unsigned long pgd, unsigned long satp_mode)
 
 void schedule()
 {
-    if (list_count_nodes(&runqueue) <= 1)
-        return;
     struct task_struct *current = get_current();
     struct task_struct *next =
         list_next_entry_circular(current, &runqueue, list);
+    if (next == current)
+        return;
     switch_mm((unsigned long)next->mm.pgd, 0x8);
     switch_to(current, next);
 }
@@ -71,8 +71,8 @@ void idle()
 void kthread_init()
 {
     INIT_LIST_HEAD(&runqueue);
-    struct task_struct *init = kthread_create(idle);
-    asm volatile("mv tp, %0" : : "r"(init));
+    struct task_struct *tidle = kthread_create(idle);
+    asm volatile("mv tp, %0" : : "r"(tidle));
 }
 
 struct task_struct *kthread_create(void (*threadfn)())

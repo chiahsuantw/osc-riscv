@@ -52,11 +52,20 @@ static void irq_add_task(void (*callback)(), int priority)
 void do_irq(struct pt_regs *regs)
 {
     disable_interrupt();
-    if (0) {        // UART interrupt
-    } else if (1) { // Timer interrupt
+    switch (IRQ_CAUSE(regs->cause)) {
+    case IRQ_S_TIMER:
         schedule();
         disable_timer_interrupt();
         irq_add_task(timer_irq_handler, 1);
+        break;
+    case IRQ_S_EXT:
+        // External interrupt
+        printk("do_irq: external interrupt\n");
+        break;
+    default:
+        printk("do_irq: unknown interrupt cause (%d)\n",
+               IRQ_CAUSE(regs->cause));
+        break;
     }
     enable_interrupt();
 

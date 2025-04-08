@@ -28,10 +28,6 @@ void disable_timer_interrupt()
 
 void timer_irq_handler()
 {
-    // Clear sip.STIP
-    asm("li t0, (1 << 5);"
-        "csrc sip, t0;");
-
     // Set up the next timer interrupt
     unsigned long ticks;
     asm("rdtime %0" : "=r"(ticks));

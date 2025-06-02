@@ -6,6 +6,7 @@
 #include "shell.h"
 #include "syscall.h"
 #include "timer.h"
+#include "vfs.h"
 
 int start_kernel()
 {
@@ -15,6 +16,7 @@ int start_kernel()
     timer_init();
     irq_init();
     enable_interrupt();
+    vfs_init();
     cmd_init();
     run_shell();
     return 0;

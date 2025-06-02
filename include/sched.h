@@ -2,6 +2,7 @@
 
 #include "list.h"
 #include "signal.h"
+#include "vfs.h"
 #include "vm.h"
 
 #define STACK_SIZE 0x2000
@@ -29,6 +30,8 @@ struct task_struct {
     enum task_state state;
     unsigned long stack;
     struct mm_struct mm;
+    char cwd[PATH_MAX];
+    struct file *fdt[MAX_FD];
     void (*sighand[_NSIG])();
     sigset_t blocked;
     sigset_t pending;

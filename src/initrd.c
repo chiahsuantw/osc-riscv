@@ -4,6 +4,7 @@
 #include "sched.h"
 #include "string.h"
 #include "utils.h"
+#include "vfs.h"
 #include "vm.h"
 
 #ifdef __QEMU__
@@ -77,6 +78,9 @@ void initrd_exec(const char *target)
                     align(filesize, PAGE_SIZE), VM_READ | VM_EXEC, 0);
             vm_mmap(&task->mm, 0, 0x3fffffb000, PAGE_SIZE * 4,
                     VM_READ | VM_WRITE, 0);
+            vfs_open("/dev/uart", 0, &task->fdt[0]); // stdin
+            vfs_open("/dev/uart", 0, &task->fdt[1]); // stdout
+            vfs_open("/dev/uart", 0, &task->fdt[2]); // stderr
             switch_mm((unsigned long)task->mm.pgd, 0x8);
             asm("csrw sscratch, %0" ::"r"(task));
             asm("mv sp, %0" ::"r"(0x3ffffff000));

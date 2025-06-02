@@ -29,25 +29,25 @@ void do_traps(struct pt_regs *regs)
 
     regs->epc += 4;
     switch (regs->a7) {
-    case 0:
+    case SYS_GETPID:
         regs->a0 = sys_getpid();
         break;
-    case 1:
-        regs->a0 = sys_read((char *)regs->a0, regs->a1);
+    case SYS_UART_READ:
+        regs->a0 = sys_uart_read((char *)regs->a0, regs->a1);
         break;
-    case 2:
-        regs->a0 = sys_write((const char *)regs->a0, regs->a1);
+    case SYS_UART_WRITE:
+        regs->a0 = sys_uart_write((const char *)regs->a0, regs->a1);
         break;
-    case 3:
+    case SYS_EXEC:
         // TODO: sys_exec
         break;
-    case 4:
+    case SYS_FORK:
         regs->a0 = sys_fork(regs);
         break;
-    case 5:
+    case SYS_EXIT:
         sys_exit(0);
         break;
-    case 6:
+    case SYS_KILL:
         struct task_struct *task = find_task_by_pid(regs->a0);
         if (!task) {
             regs->a0 = -1;
@@ -56,17 +56,39 @@ void do_traps(struct pt_regs *regs)
         kthread_stop(task);
         regs->a0 = 0;
         break;
-    case 7:
+    case SYS_SIGNAL:
         regs->a0 = sys_signal(regs->a0, (void (*)())regs->a1);
         break;
-    case 8:
+    case SYS_SIGRETURN:
         regs->a0 = sys_sigreturn(regs);
         break;
-    case 9:
+    case SYS_SIG_KILL:
         regs->a0 = sys_kill(regs->a0, regs->a1);
         break;
-    case 10:
+    case SYS_MMAP:
         regs->a0 = sys_mmap(regs->a0, regs->a1, regs->a2, regs->a3);
+        break;
+    case SYS_OPEN:
+        regs->a0 = sys_open((const char *)regs->a0, regs->a1);
+        break;
+    case SYS_CLOSE:
+        regs->a0 = sys_close(regs->a0);
+        break;
+    case SYS_READ:
+        regs->a0 = sys_read(regs->a0, (char *)regs->a1, regs->a2);
+        break;
+    case SYS_WRITE:
+        regs->a0 = sys_write(regs->a0, (const char *)regs->a1, regs->a2);
+        break;
+    case SYS_MKDIR:
+        regs->a0 = sys_mkdir((const char *)regs->a0);
+        break;
+    case SYS_MOUNT:
+        regs->a0 = sys_mount((const char *)regs->a0, (const char *)regs->a1,
+                             (const char *)regs->a2);
+        break;
+    case SYS_CHDIR:
+        regs->a0 = sys_chdir((const char *)regs->a0);
         break;
     default:
         printk("[PANIC] Unknown syscall(%d)\n", regs->a7);

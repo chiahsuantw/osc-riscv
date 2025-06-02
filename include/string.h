@@ -8,3 +8,4 @@ int strlen(const char *s);
 char *strchr(const char *s, int c);
 char *strtok(char *s, const char *delim);
 void *memcpy(void *dst, const void *src, int n);
+char *strcat(char *dst, const char *src);

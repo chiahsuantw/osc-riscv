@@ -86,6 +86,9 @@ struct task_struct *kthread_create(void (*threadfn)())
     task->thread_info.kernel_sp = task->thread.sp;
     INIT_LIST_HEAD(&task->mm.mmap);
     task->mm.pgd = kmalloc(PAGE_SIZE);
+    memset(task->cwd, 0, PATH_MAX);
+    strncpy(task->cwd, "/", 1);
+    memset(task->fdt, 0, sizeof(task->fdt));
     memcpy(task->mm.pgd, (const void *)phys_to_virt(PGD_BASE), PAGE_SIZE);
     memset(task->sighand, SIG_DFL, sizeof(task->sighand));
     task->blocked = 0;

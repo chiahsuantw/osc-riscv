@@ -89,3 +89,14 @@ void *memcpy(void *dst, const void *src, int n)
         *d++ = *s++;
     return dst;
 }
+
+char *strcat(char *dst, const char *src)
+{
+    char *d = dst;
+    while (*d != '\0')
+        d++;
+    while (*src != '\0')
+        *d++ = *src++;
+    *d = '\0';
+    return dst;
+}

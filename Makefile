@@ -1,9 +1,10 @@
 RISCVGUN ?= riscv64-unknown-elf
 
 CFLAGS = -I include -ffreestanding -mcmodel=medany -fomit-frame-pointer -Wall -g
-QEMUFLAGS = -M virt -smp 5 -m 4G -display none -serial stdio \
+QEMUFLAGS = -M virt -smp 5 -m 4G -serial stdio \
 			-kernel build/kernel.bin \
-			-initrd res/initramfs.cpio
+			-initrd res/initramfs.cpio \
+			-device ramfb
 LD_SCRIPT = src/kernel.ld
 
 SRC_FILES = $(shell find src -name "*.S") \
@@ -22,7 +23,7 @@ build:
 	@mv *.o build
 
 kernel: build
-	$(RISCVGUN)-ld -T $(LD_SCRIPT) -o build/kernel.elf $(OBJ_FILES)
+	$(RISCVGUN)-gcc -T $(LD_SCRIPT) -nostdlib -o build/kernel.elf $(OBJ_FILES) -lgcc
 	$(RISCVGUN)-objcopy -O binary build/kernel.elf build/kernel.bin
 	mkimage -f src/kernel.its kernel.fit > /dev/null
 

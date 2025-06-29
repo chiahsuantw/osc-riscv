@@ -60,6 +60,10 @@ long sys_fork(struct pt_regs *regs)
     // Copy signal handlers
     memcpy(child->sighand, parent->sighand, sizeof(parent->sighand));
 
+    map_pages(&child->mm, 0xb0000000, PAGE_SIZE * 300, 0xb0000000,
+              PAGE_DIRTY | PAGE_ACCESSED | PAGE_USER | PAGE_PRESENT |
+                  PAGE_READ | PAGE_WRITE);
+
     unsigned long sp_offset = (unsigned long)regs - parent->stack;
     struct pt_regs *childregs = (struct pt_regs *)(child->stack + sp_offset);
     childregs->a0 = 0;

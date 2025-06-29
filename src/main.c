@@ -6,10 +6,14 @@
 #include "shell.h"
 #include "syscall.h"
 #include "timer.h"
+#include "video.h"
 
 int start_kernel()
 {
     printk("\nNYCU OSC RISC-V KERNEL\n");
+#if __QEMU__
+    video_init();
+#endif
     mem_init();
     kthread_init();
     timer_init();

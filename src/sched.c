@@ -8,6 +8,7 @@
 static int nr_threads = 0;
 static struct list_head runqueue;
 
+extern unsigned long pg_dir[];
 extern void switch_to(struct task_struct *prev, struct task_struct *next);
 
 struct task_struct *get_current()
@@ -86,7 +87,7 @@ struct task_struct *kthread_create(void (*threadfn)())
     task->thread_info.kernel_sp = task->thread.sp;
     INIT_LIST_HEAD(&task->mm.mmap);
     task->mm.pgd = kmalloc(PAGE_SIZE);
-    memcpy(task->mm.pgd, (const void *)phys_to_virt(PGD_BASE), PAGE_SIZE);
+    memcpy(task->mm.pgd, pg_dir, PAGE_SIZE);
     memset(task->sighand, SIG_DFL, sizeof(task->sighand));
     task->blocked = 0;
     task->pending = 0;

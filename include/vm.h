@@ -16,8 +16,6 @@
 #define PAGE_DIRTY    (1 << 7)
 #define PAGE_SOFT     (3 << 8)
 
-// #define PAGE_BASE (PAGE_DIRTY | PAGE_ACCESSED | PAGE_USER | PAGE_PRESENT)
-
 /* Flags (vm_flags) for virtual memory areas */
 #define VM_NONE  0x0
 #define VM_READ  0x1
@@ -48,13 +46,6 @@ struct vm_area_struct {
 
 #define virt_to_phys(x) ((unsigned long)(x) - PAGE_OFFSET)
 #define phys_to_virt(x) ((unsigned long)(x) + PAGE_OFFSET)
-
-// TODO: Refactor this
-#ifdef __QEMU__
-#define PGD_BASE 0x80100000
-#else
-#define PGD_BASE 0x40100000
-#endif
 
 void map_pages(struct mm_struct *mm, unsigned long va, unsigned long size,
                unsigned long pa, unsigned long prot);

@@ -4,10 +4,9 @@
 #include "vm.h"
 #include <stdint.h>
 
-// TODO: Set to 0xfe000000
-#define FB_BASE   0xb0000000
-#define FB_WIDTH  640
-#define FB_HEIGHT 480
+#define FB_BASE   0xfe000000
+#define FB_WIDTH  1920
+#define FB_HEIGHT 1080
 #define FB_BPP    4
 #define XRGB8888  875713112
 

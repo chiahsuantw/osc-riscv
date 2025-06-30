@@ -3,6 +3,8 @@
 #include "list.h"
 #include "types.h"
 
+// TODO:     QEMU 0x180000
+#define NUM_PAGES 0x140000
 #define PAGE_SIZE 4096
 
 struct page {

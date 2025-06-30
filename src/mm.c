@@ -6,8 +6,6 @@
 extern u8 _end;
 static u8 *heap_top = &_end;
 
-#define NUM_PAGES 0x140000
-
 // TODO: Calculate the max cache index based on the page size
 #define BUDDY_MAX_ORDER 10
 #define CACHE_MAX_INDEX 6

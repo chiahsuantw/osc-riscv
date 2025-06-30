@@ -6,6 +6,21 @@
 #include "string.h"
 #include "traps.h"
 
+#define HPAGE_SIZE (1UL << 30)
+#define HPAGE_NR   (HPAGE_SIZE / PAGE_SIZE)
+
+unsigned long
+    __attribute__((section(".data"), aligned(PAGE_SIZE))) pg_dir[512] = { 0 };
+
+void setup_vm()
+{
+    for (int i = 0; i < NUM_PAGES / HPAGE_NR; i++)
+        pg_dir[256 + i] = (i * HPAGE_NR) << 10 | PAGE_PRESENT | PAGE_READ |
+                          PAGE_WRITE | PAGE_EXEC | PAGE_DIRTY | PAGE_ACCESSED;
+    asm("sfence.vma");
+    asm("csrw satp, %0" ::"r"(0x8UL << 60 | (unsigned long)pg_dir >> 12));
+}
+
 // FIXME: Remove this
 static void pagewalk(struct mm_struct *mm, unsigned long va, unsigned long pa,
                      unsigned long prot)
